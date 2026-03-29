@@ -4,21 +4,57 @@ namespace App\Http\Controllers;
 
 use App\Models\ActionPrioritaire;
 use App\Models\ObjectifImmediats;
+use App\Models\Papa;
 use App\Models\User;
 use Illuminate\Http\Request;
 
 class ObjectifImmediatsController extends Controller
 {
+    public function index(Request $request)
+    {
+        $this->authorize('papa.voir');
+
+        $query = ObjectifImmediats::with(['actionPrioritaire.papa', 'responsable'])
+            ->orderBy('code');
+
+        if ($request->filled('papa_id')) {
+            $query->whereHas('actionPrioritaire', fn($q) => $q->where('papa_id', $request->papa_id));
+        }
+        if ($request->filled('action_prioritaire_id')) {
+            $query->where('action_prioritaire_id', $request->action_prioritaire_id);
+        }
+        if ($request->filled('statut')) {
+            $query->where('statut', $request->statut);
+        }
+
+        $objectifs = $query->paginate(20)->withQueryString();
+        $papas     = Papa::orderByDesc('annee')->get(['id', 'code', 'libelle']);
+        $actions   = $request->filled('papa_id')
+            ? ActionPrioritaire::where('papa_id', $request->papa_id)->orderBy('ordre')->get(['id', 'code', 'libelle'])
+            : collect();
+
+        return view('objectifs_immediats.index', compact('objectifs', 'papas', 'actions'));
+    }
+
     public function create(Request $request)
     {
         $this->authorize('papa.modifier');
 
-        $ap = ActionPrioritaire::findOrFail($request->get('action_prioritaire_id', 0));
-        abort_if(!$ap->estEditable(), 403, 'Le PAPA associé est verrouillé.');
+        $ap    = $request->filled('action_prioritaire_id')
+                    ? ActionPrioritaire::findOrFail($request->action_prioritaire_id)
+                    : null;
+
+        if ($ap) {
+            abort_if(!$ap->estEditable(), 403, 'Le PAPA associé est verrouillé.');
+        }
 
         $users = User::actif()->orderBy('name')->get(['id', 'name', 'prenom']);
+        $papas = Papa::orderByDesc('annee')->get(['id', 'code', 'libelle']);
+        $actionsPrioritaires = $ap
+            ? ActionPrioritaire::where('papa_id', $ap->papa_id)->orderBy('ordre')->get(['id', 'code', 'libelle'])
+            : collect();
 
-        return view('objectifs_immediats.create', compact('ap', 'users'));
+        return view('objectifs_immediats.create', compact('ap', 'users', 'papas', 'actionsPrioritaires'));
     }
 
     public function store(Request $request)

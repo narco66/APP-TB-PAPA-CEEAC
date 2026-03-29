@@ -34,25 +34,25 @@ class ValidationWorkflow extends Model
 
     public function libelleAction(): string
     {
-        return match($this->action) {
-            'soumis'             => 'Soumis',
-            'approuve'           => 'Approuvé',
-            'rejete'             => 'Rejeté',
-            'demande_correction' => 'Correction demandée',
-            'information'        => 'Information',
-            default              => ucfirst($this->action),
+        return match ($this->action) {
+            'soumis' => 'Soumis',
+            'approuve' => 'Approuve',
+            'rejete' => 'Rejete',
+            'demande_correction' => 'Correction demandee',
+            'information' => 'Information',
+            default => ucfirst($this->action),
         };
     }
 
     public function couleurAction(): string
     {
-        return match($this->action) {
-            'soumis'             => 'blue',
-            'approuve'           => 'green',
-            'rejete'             => 'red',
+        return match ($this->action) {
+            'soumis' => 'blue',
+            'approuve' => 'green',
+            'rejete' => 'red',
             'demande_correction' => 'yellow',
-            'information'        => 'gray',
-            default              => 'gray',
+            'information' => 'gray',
+            default => 'gray',
         };
     }
 }

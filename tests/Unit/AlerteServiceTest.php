@@ -5,6 +5,7 @@ namespace Tests\Unit;
 use App\Models\Activite;
 use App\Models\Alerte;
 use App\Models\ActionPrioritaire;
+use App\Models\BudgetPapa;
 use App\Models\ObjectifImmediats;
 use App\Models\Papa;
 use App\Models\ResultatAttendu;
@@ -125,6 +126,30 @@ class AlerteServiceTest extends TestCase
         $this->assertNull($alertes->firstWhere('type_alerte', 'taux_realisation_faible'));
 
         Carbon::setTestNow();
+    }
+
+    public function test_genere_alerte_pour_depassement_budgetaire(): void
+    {
+        $papa = Papa::factory()->create();
+
+        BudgetPapa::create([
+            'papa_id' => $papa->id,
+            'source_financement' => 'budget_ceeac',
+            'montant_prevu' => 100000,
+            'montant_engage' => 125000,
+            'montant_decaisse' => 0,
+            'montant_solde' => -25000,
+            'libelle_ligne' => 'Mission de coordination',
+            'annee_budgetaire' => (int) $papa->annee,
+            'devise' => 'XAF',
+        ]);
+
+        $alertes = $this->service->genererAlertesPapa($papa);
+
+        $budgetAlerte = $alertes->firstWhere('type_alerte', 'budget_depasse');
+
+        $this->assertNotNull($budgetAlerte);
+        $this->assertEquals('critique', $budgetAlerte->niveau);
     }
 
     // ── marquerVue ────────────────────────────────────────────────────────

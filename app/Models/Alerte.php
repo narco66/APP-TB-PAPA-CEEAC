@@ -7,10 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Alerte extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
+
     protected $table = 'alertes';
 
     protected $fillable = [
@@ -32,7 +35,13 @@ class Alerte extends Model
         ];
     }
 
-    // ─── Relations ──────────────────────────────────────────────
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->setDescriptionForEvent(fn (string $eventName) => "Alerte {$this->titre} : {$eventName}");
+    }
 
     public function alertable(): MorphTo
     {
@@ -64,8 +73,6 @@ class Alerte extends Model
         return $this->hasMany(ActionCorrective::class);
     }
 
-    // ─── Scopes ─────────────────────────────────────────────────
-
     public function scopeNouvelle($query)
     {
         return $query->where('statut', 'nouvelle');
@@ -81,8 +88,6 @@ class Alerte extends Model
         return $query->where('destinataire_id', $userId);
     }
 
-    // ─── Helpers ────────────────────────────────────────────────
-
     public function estNouvelle(): bool
     {
         return $this->statut === 'nouvelle';
@@ -90,21 +95,21 @@ class Alerte extends Model
 
     public function couleurNiveau(): string
     {
-        return match($this->niveau) {
-            'info'      => 'blue',
+        return match ($this->niveau) {
+            'info' => 'blue',
             'attention' => 'yellow',
-            'critique'  => 'red',
-            default     => 'gray',
+            'critique' => 'red',
+            default => 'gray',
         };
     }
 
     public function iconeNiveau(): string
     {
-        return match($this->niveau) {
-            'info'      => '💬',
-            'attention' => '⚠️',
-            'critique'  => '🔴',
-            default     => 'ℹ️',
+        return match ($this->niveau) {
+            'info' => 'Info',
+            'attention' => 'Alerte',
+            'critique' => 'Critique',
+            default => 'Info',
         };
     }
 }

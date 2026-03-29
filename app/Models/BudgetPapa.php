@@ -5,9 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class BudgetPapa extends Model
 {
+    use LogsActivity;
+
     protected $table = 'budgets_papa';
 
     protected $fillable = [
@@ -25,6 +29,14 @@ class BudgetPapa extends Model
             'montant_decaisse' => 'decimal:2',
             'montant_solde' => 'decimal:2',
         ];
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->setDescriptionForEvent(fn(string $eventName) => "Budget {$this->libelle_ligne} : {$eventName}");
     }
 
     // ─── Relations ──────────────────────────────────────────────

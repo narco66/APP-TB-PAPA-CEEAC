@@ -14,7 +14,11 @@ class DatabaseSeeder extends Seeder
             ReferenceSeeder::class,
             OrganizationSeeder::class,
             RolesPermissionsSeeder::class,
+            ReportDefinitionSeeder::class,
             UserSeeder::class,
+            WorkflowDefinitionSeeder::class,
+            NotificationRuleSeeder::class,
+            ParametreSeeder::class,
             DemoScenarioSeeder::class,
         ]);
     }

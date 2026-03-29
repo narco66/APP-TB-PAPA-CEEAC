@@ -6,6 +6,7 @@ use App\Http\Requests\StorePapaRequest;
 use App\Http\Requests\UpdatePapaRequest;
 use App\Models\Papa;
 use App\Services\PapaService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class PapaController extends Controller
@@ -52,11 +53,26 @@ class PapaController extends Controller
             'actionsPrioritaires.departement',
             'actionsPrioritaires.objectifsImmediat.resultatsAttendus',
             'budgets.partenaire',
+            'budgets.actionPrioritaire',
+            'risques',
             'creePar',
             'validePar',
+            'workflowInstances.definition',
+            'decisions.prisePar',
+            'validationsWorkflow.acteur',
         ]);
 
         return view('papas.show', compact('papa'));
+    }
+
+    public function audit(Papa $papa): RedirectResponse
+    {
+        $this->authorize('voir', $papa);
+
+        return redirect()->route('admin.audit-events', [
+            'auditable_type' => Papa::class,
+            'auditable_id' => $papa->id,
+        ]);
     }
 
     public function edit(Papa $papa)
@@ -112,7 +128,7 @@ class PapaController extends Controller
 
     public function rejeter(Request $request, Papa $papa)
     {
-        $this->authorize('valider', $papa);
+        $this->authorize('rejeter', $papa);
 
         $request->validate(['motif' => 'required|string|max:1000']);
 
@@ -140,9 +156,16 @@ class PapaController extends Controller
     {
         $this->authorize('cloner', $papa);
 
-        $request->validate(['annee_nouvelle' => 'required|integer|min:2024|max:2050']);
+        $data = $request->validate([
+            'annee' => 'nullable|integer|min:2024|max:2050',
+            'annee_nouvelle' => 'nullable|integer|min:2024|max:2050',
+        ]);
 
-        $nouveau = $this->papaService->cloner($papa, (int)$request->annee_nouvelle, $request->user());
+        $anneeNouvelle = (int) ($data['annee_nouvelle'] ?? $data['annee'] ?? 0);
+
+        abort_if($anneeNouvelle === 0, 422, "L'année de clonage est requise.");
+
+        $nouveau = $this->papaService->cloner($papa, $anneeNouvelle, $request->user());
 
         return redirect()
             ->route('papas.show', $nouveau)

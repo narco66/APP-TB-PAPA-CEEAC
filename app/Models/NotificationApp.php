@@ -3,8 +3,10 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Facades\Route;
 
 class NotificationApp extends Model
 {
@@ -52,6 +54,49 @@ class NotificationApp extends Model
             'attention' => 'yellow',
             'erreur'    => 'red',
             default     => 'gray',
+        };
+    }
+
+    public function scopeNonLues(Builder $query): Builder
+    {
+        return $query->whereNull('lue_le');
+    }
+
+    public function scopeLues(Builder $query): Builder
+    {
+        return $query->whereNotNull('lue_le');
+    }
+
+    public function sourceLabel(): string
+    {
+        if ($this->notifiable_type && $this->notifiable_id) {
+            return class_basename((string) $this->notifiable_type) . ' #' . $this->notifiable_id;
+        }
+
+        return $this->titre;
+    }
+
+    public function sourceUrl(): ?string
+    {
+        if (!empty($this->lien)) {
+            return $this->lien;
+        }
+
+        if (!$this->notifiable_type || !$this->notifiable_id) {
+            return null;
+        }
+
+        return match ($this->notifiable_type) {
+            WorkflowInstance::class => Route::has('workflows.show')
+                ? route('workflows.show', $this->notifiable_id)
+                : null,
+            Decision::class => Route::has('decisions.show')
+                ? route('decisions.show', $this->notifiable_id)
+                : null,
+            Papa::class => Route::has('papas.show')
+                ? route('papas.show', $this->notifiable_id)
+                : null,
+            default => null,
         };
     }
 }

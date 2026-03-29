@@ -17,6 +17,7 @@
         position: absolute;
         inset: 0;
         background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        pointer-events: none;
     }
     .hero-shape {
         position: absolute;
@@ -26,6 +27,7 @@
         height: 80px;
         background: white;
         clip-path: ellipse(55% 100% at 50% 100%);
+        pointer-events: none;
     }
     /* Stats band */
     .stats-band { background: linear-gradient(90deg, #0A2157 0%, #1a3a7a 100%); }
@@ -374,15 +376,15 @@
                 ['date'=>'20 mars 2026', 'categorie'=>'Sommet', 'icon'=>'fa-star',
                  'titre'=>'Le 18e Sommet de la CEEAC adopte la feuille de route 2025–2030',
                  'resume'=>"Les chefs d'État et de gouvernement des 11 États membres ont adopté à Libreville la nouvelle feuille de route stratégique qui guidera l'action de la Commission pour les cinq prochaines années.",
-                 'lien'=>'#'],
+                 'lien'=>route('website.actualite', '18e-sommet-ceeac-feuille-de-route')],
                 ['date'=>'15 mars 2026', 'categorie'=>'Sécurité', 'icon'=>'fa-shield-alt',
                  'titre'=>'La CEEAC renforce son dispositif de lutte contre le terrorisme en Afrique centrale',
                  'resume'=>"À l'issue de la réunion des ministres en charge de la sécurité, la Commission a présenté les nouvelles mesures adoptées pour renforcer la coopération sécuritaire régionale et contrer la menace terroriste.",
-                 'lien'=>'#'],
+                 'lien'=>route('website.actualite', 'lutte-contre-terrorisme-2026')],
                 ['date'=>'8 mars 2026', 'categorie'=>'Économie', 'icon'=>'fa-chart-line',
                  'titre'=>'Lancement du programme de facilitation du commerce intra-CEEAC 2026',
                  'resume'=>'La Commission lance un nouveau programme visant à réduire les barrières non tarifaires, harmoniser les procédures douanières et dynamiser les échanges commerciaux entre les États membres.',
-                 'lien'=>'#'],
+                 'lien'=>route('website.actualite', 'facilitation-commerce-2026')],
             ];
             @endphp
 

@@ -1,0 +1,186 @@
+MANUEL UTILISATEUR
+TB-PAPA-CEEAC
+
+Tableau de bord du Plan d'Action Prioritaire Annuel de la Commission de la CEEAC.
+
+1. OBJET
+Ce manuel presente les principaux usages de l'application:
+- connexion
+- navigation
+- suivi PAPA
+- activites
+- indicateurs
+- budget
+- risques
+- alertes
+- workflows
+- decisions
+- GED
+- audit
+- notifications
+- administration
+
+2. ACCES
+Interface publique: /
+Connexion applicative: /login
+
+Comptes de demonstration seedes:
+- admin@ceeac-eccas.org / Admin@2025!
+- president@ceeac-eccas.org / President@2025!
+- sg@ceeac-eccas.org / SG@2025!
+- admin.fonctionnel@ceeac-eccas.org / AdminFonctionnel@2025!
+- audit@ceeac-eccas.org / Audit@2025!
+
+3. NAVIGATION
+Menu lateral:
+- Tableau de bord
+- Plans d'action
+- Actions prioritaires
+- Objectifs immediats
+- Resultats attendus
+- Rapports
+- Activites
+- Diagramme Gantt
+- Indicateurs
+- Budget
+- Risques
+- Workflows
+- Decisions
+- Alertes
+- GED / Documents
+- Administration
+
+Barre superieure:
+- notifications
+- profil
+- deconnexion
+
+4. TABLEAU DE BORD
+Le contenu varie selon le role:
+- president / super admin: vue executive
+- vice-president: vue consolidee
+- commissaire: vue sectorielle
+- SG: vue de coordination
+- directeurs: vue directionnelle
+- chefs de service / points focaux: vue operationnelle
+- audit / controle financier: vue de controle
+
+5. PAPA
+Le module PAPA permet de:
+- creer un plan
+- consulter un plan
+- modifier un brouillon
+- soumettre
+- valider
+- rejeter
+- archiver
+- cloner
+- recalculer les taux
+- ouvrir l'audit associe
+
+Statuts usuels:
+- brouillon
+- soumis
+- valide
+- archive
+
+6. CHAINE DE PLANIFICATION
+PAPA
+-> Action prioritaire
+-> Objectif immediat
+-> Resultat attendu
+-> Activite
+
+7. ACTIVITES ET GANTT
+Le module Activites permet de:
+- suivre l'execution
+- mettre a jour le taux de realisation
+- consulter le Gantt
+
+8. INDICATEURS
+Le module Indicateurs permet de:
+- definir les indicateurs
+- saisir des valeurs
+- valider les donnees
+
+9. BUDGET
+Le module Budget permet de:
+- suivre les lignes budgetaires
+- visualiser le prevu et le decaisse
+
+10. RISQUES
+Le module Risques permet de:
+- enregistrer les risques
+- suivre les risques ouverts
+
+11. ALERTES
+Le module Alertes permet de:
+- consulter
+- traiter
+- escalader
+
+12. WORKFLOWS
+Le module Workflows permet de:
+- consulter les circuits
+- approuver
+- rejeter
+- commenter
+- consulter l'audit associe
+
+13. DECISIONS
+Le module Decisions permet de:
+- creer une decision
+- rattacher un document
+- valider
+- executer
+- consulter l'audit associe
+
+14. GED
+Le module GED permet de:
+- deposer
+- consulter
+- valider
+- archiver
+- telecharger
+
+15. RAPPORTS
+Le module Rapports permet de:
+- creer
+- consulter
+- valider
+- publier
+- exporter
+
+16. NOTIFICATIONS
+Le centre de notifications permet de:
+- consulter
+- filtrer
+- marquer une notification comme lue
+- tout marquer comme lu
+
+17. AUDIT METIER
+Le module Audit metier permet de:
+- filtrer par acteur, module, niveau, PAPA, periode
+- filtrer par objet
+- exporter en CSV
+- revenir vers l'objet source
+
+18. ADMINISTRATION
+Administration:
+- utilisateurs
+- structure organisationnelle
+- regles de notification
+
+19. DEPANNAGE
+Probleme: menu absent
+Cause probable: permission manquante
+
+Probleme: action interdite
+Cause probable: role ou statut non compatible
+
+Probleme: page vide
+Cause probable: filtre trop restrictif ou absence de donnees
+
+20. VERSION
+Application: APP-TB-PAPA-CEEAC
+Date du manuel: 2026-03-29

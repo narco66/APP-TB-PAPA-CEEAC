@@ -1,0 +1,113 @@
+@extends('layouts.app')
+
+@section('title', 'Services')
+
+@section('content')
+<div class="max-w-5xl mx-auto">
+
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Services</h1>
+            <p class="text-sm text-gray-500 mt-1">Services et unités opérationnelles</p>
+        </div>
+        <a href="{{ route('admin.structure.services.create') }}"
+           class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg">
+            <i class="fas fa-plus"></i> Nouveau service
+        </a>
+    </div>
+
+    {{-- Sous-navigation --}}
+    <div class="flex gap-2 mb-6 border-b border-gray-200">
+        <a href="{{ route('admin.structure.departements') }}"
+           class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 border-b-2 border-transparent">
+            <i class="fas fa-sitemap mr-1"></i> Départements
+        </a>
+        <a href="{{ route('admin.structure.directions') }}"
+           class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 border-b-2 border-transparent">
+            <i class="fas fa-building mr-1"></i> Directions
+        </a>
+        <a href="{{ route('admin.structure.services') }}"
+           class="px-4 py-2 text-sm font-medium border-b-2 border-indigo-600 text-indigo-600">
+            <i class="fas fa-layer-group mr-1"></i> Services
+        </a>
+    </div>
+
+    {{-- Filtre direction --}}
+    <form method="GET" class="mb-4 flex items-center gap-3">
+        <select name="direction_id" onchange="this.form.submit()"
+                class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm">
+            <option value="">Toutes les directions</option>
+            @foreach($directions as $dir)
+                <option value="{{ $dir->id }}" {{ request('direction_id') == $dir->id ? 'selected' : '' }}>
+                    {{ $dir->code }} — {{ $dir->libelle }}
+                </option>
+            @endforeach
+        </select>
+        @if(request('direction_id'))
+            <a href="{{ route('admin.structure.services') }}" class="text-xs text-gray-400 hover:text-red-500">
+                <i class="fas fa-times"></i> Réinitialiser
+            </a>
+        @endif
+    </form>
+
+    @if(session('success'))
+        <div class="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
+            <i class="fas fa-check-circle mr-1"></i> {{ session('success') }}
+        </div>
+    @endif
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <table class="w-full text-sm">
+            <thead class="bg-gray-50 border-b border-gray-200">
+                <tr>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Code</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Service</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Direction</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Département</th>
+                    <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase">Activités</th>
+                    <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase">Statut</th>
+                    <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                @forelse($services as $svc)
+                <tr class="hover:bg-gray-50">
+                    <td class="px-4 py-3 font-mono font-bold text-indigo-700 text-xs">{{ $svc->code }}</td>
+                    <td class="px-4 py-3">
+                        <div class="font-medium text-gray-900">{{ $svc->libelle }}</div>
+                        @if($svc->libelle_court && $svc->libelle_court !== $svc->libelle)
+                            <div class="text-xs text-gray-400">{{ $svc->libelle_court }}</div>
+                        @endif
+                    </td>
+                    <td class="px-4 py-3 text-gray-600 text-xs">
+                        {{ $svc->direction?->libelle_court ?? $svc->direction?->code ?? '—' }}
+                    </td>
+                    <td class="px-4 py-3 text-gray-500 text-xs">
+                        {{ $svc->direction?->departement?->libelle_court ?? '—' }}
+                    </td>
+                    <td class="px-4 py-3 text-center text-gray-600">{{ $svc->activites_count }}</td>
+                    <td class="px-4 py-3 text-center">
+                        @if($svc->actif)
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700">Actif</span>
+                        @else
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">Inactif</span>
+                        @endif
+                    </td>
+                    <td class="px-4 py-3 text-right">
+                        <a href="{{ route('admin.structure.services.edit', $svc) }}"
+                           class="text-indigo-600 hover:text-indigo-800 text-xs font-medium">
+                            <i class="fas fa-pencil-alt mr-1"></i>Modifier
+                        </a>
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="7" class="px-4 py-8 text-center text-gray-400 text-sm">Aucun service.</td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+</div>
+@endsection

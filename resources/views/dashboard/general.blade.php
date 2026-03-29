@@ -14,6 +14,16 @@
         <a href="{{ route('indicateurs.index') }}" class="block bg-green-50 rounded-xl p-4 hover:bg-green-100 transition">
             <span class="font-medium text-green-700">Indicateurs</span>
         </a>
+        @can('workflow.voir')
+        <a href="{{ route('workflows.index') }}" class="block bg-amber-50 rounded-xl p-4 hover:bg-amber-100 transition">
+            <span class="font-medium text-amber-700">Workflows institutionnels</span>
+        </a>
+        @endcan
+        @can('decision.voir')
+        <a href="{{ route('decisions.index') }}" class="block bg-rose-50 rounded-xl p-4 hover:bg-rose-100 transition">
+            <span class="font-medium text-rose-700">Décisions et arbitrages</span>
+        </a>
+        @endcan
     </div>
 </div>
 @endsection

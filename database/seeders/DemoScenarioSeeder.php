@@ -157,6 +157,11 @@ class DemoScenarioSeeder extends Seeder
                 ['libelle' => 'Développer l’attractivité des investissements régionaux', 'focus' => 'la promotion des investissements', 'directions' => ['DIM'], 'priorite' => 'normale', 'prefixe' => 'INV'],
                 ['libelle' => 'Mettre à niveau le suivi statistique et commercial', 'focus' => 'le suivi statistique', 'directions' => ['DCE', 'DIM'], 'priorite' => 'haute', 'prefixe' => 'STA'],
             ],
+            'DER' => [
+                ['libelle' => 'Accélérer l’intégration économique régionale et la compétitivité', 'focus' => 'l’intégration économique régionale', 'directions' => ['DCE', 'DIM'], 'priorite' => 'critique', 'prefixe' => 'INT'],
+                ['libelle' => 'Renforcer le climat des affaires et la mobilisation des investissements', 'focus' => 'le climat des affaires régional', 'directions' => ['DIM'], 'priorite' => 'haute', 'prefixe' => 'AFF'],
+                ['libelle' => 'Améliorer la coordination des politiques commerciales régionales', 'focus' => 'les politiques commerciales régionales', 'directions' => ['DCE'], 'priorite' => 'normale', 'prefixe' => 'POL'],
+            ],
             'DID' => [
                 ['libelle' => 'Sécuriser la mise en œuvre des corridors multimodaux', 'focus' => 'les corridors multimodaux', 'directions' => ['DTI'], 'priorite' => 'critique', 'prefixe' => 'COR'],
                 ['libelle' => 'Renforcer l’intégration énergétique et climatique', 'focus' => 'l’intégration énergétique', 'directions' => ['DEN'], 'priorite' => 'haute', 'prefixe' => 'ENE'],
@@ -168,6 +173,13 @@ class DemoScenarioSeeder extends Seeder
                 ['libelle' => 'Structurer les dispositifs de formation et d’inclusion des jeunes', 'focus' => 'les compétences et l’inclusion des jeunes', 'directions' => ['DDS', 'DGF'], 'priorite' => 'haute', 'prefixe' => 'JEU'],
             ],
         ];
+
+        if (! isset($themes[$deptCode])) {
+            $departement = $this->departements->firstWhere('code', $deptCode);
+            $fallbackCode = $departement?->type === 'appui' ? 'SG' : 'DIE';
+
+            return $themes[$fallbackCode][$index % count($themes[$fallbackCode])];
+        }
 
         return $themes[$deptCode][$index % count($themes[$deptCode])];
     }

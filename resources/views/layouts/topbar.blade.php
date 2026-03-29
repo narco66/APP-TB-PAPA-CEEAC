@@ -35,7 +35,7 @@
                 </div>
                 <div class="max-h-64 overflow-y-auto divide-y divide-gray-50">
                     @forelse($notifs as $notif)
-                    <a href="{{ $notif->lien ?? '#' }}" class="block px-4 py-3 hover:bg-gray-50 transition">
+                    <a href="{{ route('notifications.read', $notif) }}" class="block px-4 py-3 hover:bg-gray-50 transition">
                         <p class="text-sm font-medium text-gray-800">{{ $notif->titre }}</p>
                         <p class="text-xs text-gray-500 mt-1 truncate">{{ $notif->message }}</p>
                         <p class="text-xs text-gray-400 mt-1">{{ $notif->created_at->diffForHumans() }}</p>
@@ -49,7 +49,7 @@
                 </div>
                 @if($countNotifs > 5)
                 <div class="p-3 border-t border-gray-100 text-center">
-                    <a href="#" class="text-xs text-indigo-600 hover:underline">Voir toutes les notifications</a>
+                    <a href="{{ route('notifications.index') }}" class="text-xs text-indigo-600 hover:underline">Voir toutes les notifications</a>
                 </div>
                 @endif
             </div>

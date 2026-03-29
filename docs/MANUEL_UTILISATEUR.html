@@ -1,0 +1,297 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manuel Utilisateur - APP-TB-PAPA-CEEAC</title>
+    <style>
+        :root {
+            --blue: #0a2157;
+            --gold: #c4922a;
+            --ink: #1f2937;
+            --muted: #6b7280;
+            --line: #dbe2ea;
+            --bg: #f7f8fb;
+            --card: #ffffff;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+            color: var(--ink);
+            background: var(--bg);
+            line-height: 1.55;
+        }
+        .page {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 32px;
+        }
+        .cover {
+            background: linear-gradient(135deg, var(--blue), #123a8a);
+            color: #fff;
+            border-radius: 18px;
+            padding: 42px;
+            margin-bottom: 28px;
+        }
+        .cover h1 {
+            margin: 0 0 8px;
+            font-size: 34px;
+        }
+        .cover h2 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: #d7e3ff;
+        }
+        .meta {
+            margin-top: 18px;
+            color: #f4d998;
+            font-size: 14px;
+        }
+        .toc, .section {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 24px 26px;
+            margin-bottom: 18px;
+        }
+        h3 {
+            margin-top: 0;
+            color: var(--blue);
+            font-size: 22px;
+        }
+        h4 {
+            color: var(--blue);
+            margin-bottom: 8px;
+        }
+        p {
+            margin: 0 0 12px;
+        }
+        ul, ol {
+            margin: 0 0 12px 20px;
+        }
+        li {
+            margin-bottom: 6px;
+        }
+        .pill {
+            display: inline-block;
+            padding: 6px 10px;
+            margin: 4px 6px 0 0;
+            border-radius: 999px;
+            background: #eef3ff;
+            color: var(--blue);
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .box {
+            border-left: 4px solid var(--gold);
+            background: #fff8e8;
+            padding: 14px 16px;
+            border-radius: 10px;
+            margin: 14px 0;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+        .mini-card {
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 14px;
+            background: #fcfdff;
+        }
+        code {
+            background: #edf2f7;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-family: Consolas, "Courier New", monospace;
+        }
+        .footer {
+            text-align: center;
+            color: var(--muted);
+            font-size: 13px;
+            padding: 18px 0 6px;
+        }
+        @media print {
+            body { background: #fff; }
+            .page { max-width: none; padding: 12mm; }
+            .toc, .section, .cover { break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <section class="cover">
+            <h1>Manuel Utilisateur</h1>
+            <h2>APP-TB-PAPA-CEEAC</h2>
+            <p class="meta">Version de demonstration | Date: 29 mars 2026</p>
+        </section>
+        <section class="toc">
+            <h3>Sommaire</h3>
+            <div>
+                <span class="pill">Acces</span>
+                <span class="pill">Tableau de bord</span>
+                <span class="pill">PAPA</span>
+                <span class="pill">RBM</span>
+                <span class="pill">Budget</span>
+                <span class="pill">GED</span>
+                <span class="pill">Workflow</span>
+                <span class="pill">Decisions</span>
+                <span class="pill">Alertes</span>
+                <span class="pill">Notifications</span>
+                <span class="pill">Audit</span>
+                <span class="pill">Administration</span>
+            </div>
+        </section>
+        <section class="section">
+            <h3>1. Objet de l'application</h3>
+            <p>APP-TB-PAPA-CEEAC est une application de pilotage, de suivi et de tracabilite du Plan d'Action Prioritaire Annuel de la CEEAC.</p>
+            <div class="grid">
+                <div class="mini-card">
+                    <h4>Fonctions centrales</h4>
+                    <ul>
+                        <li>Suivi des PAPAs</li>
+                        <li>Gestion des actions, resultats et activites</li>
+                        <li>Suivi des indicateurs</li>
+                        <li>Gestion budgetaire</li>
+                    </ul>
+                </div>
+                <div class="mini-card">
+                    <h4>Fonctions de gouvernance</h4>
+                    <ul>
+                        <li>Workflows de validation</li>
+                        <li>Decisions institutionnelles</li>
+                        <li>Notifications</li>
+                        <li>Audit metier</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        <section class="section">
+            <h3>2. Acces</h3>
+            <p>URL locale de demonstration: <code>http://127.0.0.1:8000</code></p>
+            <p>Connexion: cliquer sur <code>Espace membres</code> ou ouvrir <code>http://127.0.0.1:8000/login</code>.</p>
+            <div class="box">
+                <strong>Compte principal de demonstration</strong><br>
+                Email: <code>admin@ceeac-eccas.org</code><br>
+                Mot de passe: <code>Admin@2025!</code>
+            </div>
+        </section>
+        <section class="section">
+            <h3>3. Navigation</h3>
+            <p>L'application adapte ses menus au profil et aux permissions de l'utilisateur.</p>
+            <ul>
+                <li>Barre laterale: modules principaux</li>
+                <li>Barre superieure: notifications, profil, acces rapides</li>
+                <li>Listes: filtres, recherche, consultation</li>
+                <li>Fiches: detail, historique, actions contextuelles</li>
+            </ul>
+        </section>
+        <section class="section">
+            <h3>4. Tableau de bord</h3>
+            <p>Le tableau de bord regroupe les indicateurs de pilotage les plus utiles.</p>
+            <ul>
+                <li>Taux global d'execution</li>
+                <li>Taux par departement</li>
+                <li>Budgets engages et consommes</li>
+                <li>Activites en retard</li>
+                <li>Alertes critiques</li>
+                <li>Tendances KPI</li>
+            </ul>
+        </section>
+        <section class="section">
+            <h3>5. PAPAs et cycle de vie</h3>
+            <p>Un PAPA suit generalement le cycle suivant:</p>
+            <ul>
+                <li>Brouillon</li>
+                <li>Soumis</li>
+                <li>Valide</li>
+                <li>Archive</li>
+            </ul>
+            <p>Selon les permissions, il est possible de creer, modifier, soumettre, valider, rejeter, archiver ou cloner un PAPA.</p>
+        </section>
+        <section class="section">
+            <h3>6. Chaine RBM</h3>
+            <p>La logique de l'application repose sur une structuration orientee resultats:</p>
+            <ul>
+                <li>Action prioritaire</li>
+                <li>Objectif immediat</li>
+                <li>Resultat attendu</li>
+                <li>Indicateur</li>
+                <li>Activite</li>
+                <li>Tache</li>
+            </ul>
+        </section>
+        <section class="section">
+            <h3>7. Budget, GED et execution</h3>
+            <ul>
+                <li>Suivi des lignes budgetaires et sources de financement</li>
+                <li>Suivi des engagements et de la consommation</li>
+                <li>Ajout de documents justificatifs</li>
+                <li>Suivi de l'execution des activites et taches</li>
+            </ul>
+        </section>
+        <section class="section">
+            <h3>8. Workflow et decisions</h3>
+            <div class="grid">
+                <div class="mini-card">
+                    <h4>Workflow</h4>
+                    <ul>
+                        <li>Demarrage</li>
+                        <li>Approbation</li>
+                        <li>Rejet avec motif</li>
+                        <li>Commentaire</li>
+                        <li>Historique</li>
+                    </ul>
+                </div>
+                <div class="mini-card">
+                    <h4>Decisions</h4>
+                    <ul>
+                        <li>Arbitrage</li>
+                        <li>Validation</li>
+                        <li>Orientation</li>
+                        <li>Report</li>
+                        <li>Execution</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        <section class="section">
+            <h3>9. Alertes, notifications et audit</h3>
+            <ul>
+                <li>Alertes sur retards, budgets critiques, KPI faibles</li>
+                <li>Notifications in-app sur evenements majeurs</li>
+                <li>Audit metier avec filtres, export CSV et liens vers les objets sources</li>
+            </ul>
+        </section>
+        <section class="section">
+            <h3>10. Procedure rapide de demonstration</h3>
+            <ol>
+                <li>Se connecter avec le compte administrateur</li>
+                <li>Consulter le tableau de bord</li>
+                <li>Ouvrir un PAPA</li>
+                <li>Consulter le workflow associe</li>
+                <li>Consulter une decision</li>
+                <li>Ouvrir les notifications</li>
+                <li>Ouvrir l'audit metier</li>
+                <li>Exporter l'audit en CSV</li>
+            </ol>
+        </section>
+        <section class="section">
+            <h3>11. Bonnes pratiques</h3>
+            <ul>
+                <li>Verifier les permissions du compte utilise</li>
+                <li>Joindre des pieces justificatives pertinentes</li>
+                <li>Renseigner les motifs de rejet</li>
+                <li>Consulter regulierement les notifications</li>
+                <li>Utiliser l'audit metier en cas d'anomalie</li>
+            </ul>
+        </section>
+        <div class="footer">
+            Manuel genere pour APP-TB-PAPA-CEEAC
+        </div>
+    </div>
+</body>
+</html>

@@ -61,6 +61,8 @@ class ActiviteController extends Controller
 
     public function store(StoreActiviteRequest $request)
     {
+        $this->authorize('activite.creer');
+
         $activite = Activite::create(array_merge($request->validated(), [
             'created_by' => $request->user()->id,
         ]));

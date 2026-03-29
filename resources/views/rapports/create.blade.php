@@ -4,6 +4,7 @@
 
 @section('content')
 <div class="max-w-3xl mx-auto">
+    @include('rapports.partials.legacy-bridge')
 
     <!-- Fil d'ariane -->
     <nav class="text-sm text-gray-500 mb-4 flex items-center gap-2">

@@ -8,17 +8,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class ResultatAttendu extends Model
 {
     use HasFactory;
-    use SoftDeletes;
+    use SoftDeletes, LogsActivity;
 
     protected $table = 'resultats_attendus';
 
     protected $fillable = [
         'objectif_immediat_id', 'code', 'libelle', 'description',
-        'type_resultat', 'ordre', 'statut', 'taux_atteinte',
+        'type_resultat', 'annee_reference', 'ordre', 'statut', 'taux_atteinte',
         'preuve_requise', 'type_preuve_attendue',
         'responsable_id', 'notes',
     ];
@@ -29,6 +31,14 @@ class ResultatAttendu extends Model
             'taux_atteinte' => 'decimal:2',
             'preuve_requise' => 'boolean',
         ];
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->setDescriptionForEvent(fn(string $e) => "RésultatAttendu {$this->code} : {$e}");
     }
 
     // ─── Relations ──────────────────────────────────────────────

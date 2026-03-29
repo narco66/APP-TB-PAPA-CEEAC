@@ -226,7 +226,7 @@
                     <p class="text-sm text-gray-500">Transport, énergie, numérique</p>
                 </div>
             </a>
-            <a href="{{ route('website.domaine', 'commerce') }}" class="bg-white border border-gray-200 rounded-xl p-5 hover:border-amber-400 hover:shadow-sm transition flex gap-4 items-start">
+            <a href="{{ route('website.domaine', 'commerce-investissement') }}" class="bg-white border border-gray-200 rounded-xl p-5 hover:border-amber-400 hover:shadow-sm transition flex gap-4 items-start">
                 <span class="text-2xl">&#128181;</span>
                 <div>
                     <h4 class="font-semibold text-blue-950">Commerce</h4>

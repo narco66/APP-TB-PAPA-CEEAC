@@ -88,6 +88,28 @@ class PapaWorkflowTest extends TestCase
         $response->assertOk();
     }
 
+    public function test_audit_papa_redirige_vers_audit_filtre(): void
+    {
+        $papa = Papa::factory()->create();
+
+        $this->actingAs($this->gestionnaire)
+            ->get(route('papas.audit', $papa))
+            ->assertRedirect(route('admin.audit-events', [
+                'auditable_type' => Papa::class,
+                'auditable_id' => $papa->id,
+            ]));
+    }
+
+    public function test_audit_papa_refuse_sans_permission_de_lecture(): void
+    {
+        $papa = Papa::factory()->create();
+        $intrus = User::factory()->create(['actif' => true]);
+
+        $this->actingAs($intrus)
+            ->get(route('papas.audit', $papa))
+            ->assertForbidden();
+    }
+
     // ── Workflow de statut ────────────────────────────────────────────────
 
     public function test_workflow_complet_brouillon_vers_en_execution(): void

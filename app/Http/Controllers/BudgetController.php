@@ -9,24 +9,42 @@ use Illuminate\Http\Request;
 
 class BudgetController extends Controller
 {
-    public function index(Papa $papa)
+    public function index(Request $request, Papa $papa)
     {
-        $this->authorize('papa.voir');
+        $this->authorize('budget.voir');
 
-        $papa->load(['budgets.partenaire', 'budgets.actionPrioritaire']);
+        $query = BudgetPapa::with(['partenaire', 'actionPrioritaire'])
+            ->where('papa_id', $papa->id);
+
+        if ($request->filled('source_financement')) {
+            $query->where('source_financement', $request->source_financement);
+        }
+        if ($request->filled('action_prioritaire_id')) {
+            $query->where('action_prioritaire_id', $request->action_prioritaire_id);
+        }
+        if ($request->filled('annee_budgetaire')) {
+            $query->where('annee_budgetaire', $request->annee_budgetaire);
+        }
+
+        $budgets = $query->orderBy('source_financement')->orderBy('annee_budgetaire')->get();
 
         $totaux = [
-            'prevu'    => $papa->budgets->sum('montant_prevu'),
-            'engage'   => $papa->budgets->sum('montant_engage'),
-            'decaisse' => $papa->budgets->sum('montant_decaisse'),
+            'prevu'    => $budgets->sum('montant_prevu'),
+            'engage'   => $budgets->sum('montant_engage'),
+            'decaisse' => $budgets->sum('montant_decaisse'),
         ];
 
-        return view('budgets.index', compact('papa', 'totaux'));
+        $papas               = Papa::orderByDesc('annee')->get(['id', 'code', 'libelle', 'annee']);
+        $actionsPrioritaires = $papa->actionsPrioritaires()->orderBy('ordre')->get(['id', 'code', 'libelle']);
+        $annees              = BudgetPapa::where('papa_id', $papa->id)
+                                ->distinct()->orderBy('annee_budgetaire')->pluck('annee_budgetaire');
+
+        return view('budgets.index', compact('papa', 'budgets', 'totaux', 'papas', 'actionsPrioritaires', 'annees'));
     }
 
     public function create(Papa $papa)
     {
-        $this->authorize('papa.modifier');
+        $this->authorize('budget.creer');
         abort_if(!$papa->estEditable(), 403, 'Ce PAPA est verrouillé.');
 
         $actionsPrioritaires = $papa->actionsPrioritaires()->orderBy('ordre')->get(['id', 'code', 'libelle']);
@@ -36,7 +54,7 @@ class BudgetController extends Controller
 
     public function store(Request $request, Papa $papa)
     {
-        $this->authorize('papa.modifier');
+        $this->authorize('budget.creer');
         abort_if(!$papa->estEditable(), 403, 'Ce PAPA est verrouillé.');
 
         $data = $request->validate([
@@ -65,7 +83,7 @@ class BudgetController extends Controller
 
     public function edit(Papa $papa, BudgetPapa $budget)
     {
-        $this->authorize('papa.modifier');
+        $this->authorize('budget.modifier');
         abort_if(!$papa->estEditable(), 403, 'Ce PAPA est verrouillé.');
         abort_if($budget->papa_id !== $papa->id, 404);
 
@@ -76,7 +94,7 @@ class BudgetController extends Controller
 
     public function update(Request $request, Papa $papa, BudgetPapa $budget)
     {
-        $this->authorize('papa.modifier');
+        $this->authorize('budget.modifier');
         abort_if(!$papa->estEditable(), 403, 'Ce PAPA est verrouillé.');
         abort_if($budget->papa_id !== $papa->id, 404);
 
@@ -104,7 +122,7 @@ class BudgetController extends Controller
 
     public function destroy(Papa $papa, BudgetPapa $budget)
     {
-        $this->authorize('papa.modifier');
+        $this->authorize('budget.supprimer');
         abort_if(!$papa->estEditable(), 403, 'Ce PAPA est verrouillé.');
         abort_if($budget->papa_id !== $papa->id, 404);
 

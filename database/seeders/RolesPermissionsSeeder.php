@@ -110,6 +110,19 @@ class RolesPermissionsSeeder extends Seeder
             'rapport.publier',
             'rapport.exporter',
 
+            // ── Workflow / Décisions / Audit ──────────────────────────────────
+            'workflow.voir',
+            'workflow.demarrer',
+            'workflow.approuver',
+            'workflow.rejeter',
+            'workflow.commenter',
+            'decision.voir',
+            'decision.creer',
+            'decision.valider',
+            'decision.executer',
+            'audit_event.voir',
+            'notification_rule.gerer',
+
             // ── Dashboard ─────────────────────────────────────────────────
             'dashboard.president',
             'dashboard.vice_president',
@@ -127,6 +140,37 @@ class RolesPermissionsSeeder extends Seeder
             'admin.parametres',
             'admin.audit_log',
             'admin.purger',
+
+            // ── Paramètres ────────────────────────────────────────────────
+            'parametres.generaux.voir',
+            'parametres.generaux.modifier',
+            'parametres.papa.voir',
+            'parametres.papa.modifier',
+            'parametres.papa.archiver',
+            'parametres.referentiels.voir',
+            'parametres.referentiels.gerer',
+            'parametres.libelles.voir',
+            'parametres.libelles.modifier',
+            'parametres.rbm.voir',
+            'parametres.rbm.modifier',
+            'parametres.budget.voir',
+            'parametres.budget.modifier',
+            'parametres.alertes.voir',
+            'parametres.alertes.modifier',
+            'parametres.ged.voir',
+            'parametres.ged.modifier',
+            'parametres.workflows.voir',
+            'parametres.workflows.modifier',
+            'parametres.droits.voir',
+            'parametres.droits.modifier',
+            'parametres.affichage.voir',
+            'parametres.affichage.modifier',
+            'parametres.technique.voir',
+            'parametres.technique.modifier',
+            'parametres.journal.voir',
+            'parametres.sauvegardes.voir',
+            'parametres.sauvegardes.exporter',
+            'parametres.sauvegardes.importer',
         ];
 
         foreach ($permissions as $perm) {
@@ -152,6 +196,9 @@ class RolesPermissionsSeeder extends Seeder
             'risque.voir',
             'document.voir', 'document.telecharger', 'document.voir_confidentiel',
             'rapport.voir', 'rapport.exporter',
+            'workflow.voir', 'workflow.approuver',
+            'decision.voir', 'decision.valider', 'decision.executer',
+            'audit_event.voir',
             'dashboard.president',
         ]);
 
@@ -166,6 +213,9 @@ class RolesPermissionsSeeder extends Seeder
             'risque.voir',
             'document.voir', 'document.telecharger', 'document.voir_confidentiel',
             'rapport.voir', 'rapport.exporter',
+            'workflow.voir', 'workflow.approuver',
+            'decision.voir', 'decision.valider',
+            'audit_event.voir',
             'dashboard.vice_president',
         ]);
 
@@ -183,6 +233,9 @@ class RolesPermissionsSeeder extends Seeder
             'risque.voir', 'risque.creer', 'risque.modifier',
             'document.voir', 'document.telecharger', 'document.voir_confidentiel',
             'rapport.voir', 'rapport.valider', 'rapport.exporter',
+            'workflow.voir', 'workflow.approuver', 'workflow.commenter',
+            'decision.voir', 'decision.creer', 'decision.valider',
+            'audit_event.voir',
             'dashboard.commissaire',
         ]);
 
@@ -200,6 +253,9 @@ class RolesPermissionsSeeder extends Seeder
             'risque.voir', 'risque.creer', 'risque.modifier',
             'document.voir', 'document.telecharger', 'document.voir_confidentiel', 'document.valider',
             'rapport.voir', 'rapport.creer', 'rapport.valider', 'rapport.publier', 'rapport.exporter',
+            'workflow.voir', 'workflow.demarrer', 'workflow.approuver', 'workflow.rejeter', 'workflow.commenter',
+            'decision.voir', 'decision.creer', 'decision.valider', 'decision.executer',
+            'audit_event.voir', 'notification_rule.gerer',
             'dashboard.sg',
             'admin.utilisateurs', 'admin.structure', 'admin.partenaires',
         ]);
@@ -214,11 +270,13 @@ class RolesPermissionsSeeder extends Seeder
             'indicateur.voir', 'indicateur.creer', 'indicateur.modifier', 'indicateur.saisir_valeur', 'indicateur.valider_valeur',
             'activite.voir', 'activite.creer', 'activite.modifier', 'activite.mettre_a_jour_avancement',
             'tache.voir', 'tache.creer', 'tache.modifier',
-            'budget.voir', 'budget.creer', 'budget.modifier',
+            'budget.voir', 'budget.creer', 'budget.modifier', 'budget.supprimer',
             'alerte.voir', 'alerte.traiter',
             'risque.voir', 'risque.creer', 'risque.modifier',
             'document.voir', 'document.deposer', 'document.modifier', 'document.telecharger', 'document.valider',
             'rapport.voir', 'rapport.creer', 'rapport.modifier', 'rapport.valider', 'rapport.exporter',
+            'workflow.voir', 'workflow.demarrer', 'workflow.commenter',
+            'decision.voir', 'decision.creer',
             'dashboard.direction',
         ]);
 
@@ -232,11 +290,13 @@ class RolesPermissionsSeeder extends Seeder
             'indicateur.voir', 'indicateur.creer', 'indicateur.modifier', 'indicateur.saisir_valeur', 'indicateur.valider_valeur',
             'activite.voir', 'activite.creer', 'activite.modifier', 'activite.mettre_a_jour_avancement',
             'tache.voir', 'tache.creer', 'tache.modifier',
-            'budget.voir', 'budget.creer', 'budget.modifier',
+            'budget.voir', 'budget.creer', 'budget.modifier', 'budget.supprimer',
             'alerte.voir', 'alerte.traiter',
             'risque.voir', 'risque.creer', 'risque.modifier',
             'document.voir', 'document.deposer', 'document.modifier', 'document.telecharger', 'document.valider',
             'rapport.voir', 'rapport.creer', 'rapport.modifier', 'rapport.valider', 'rapport.exporter',
+            'workflow.voir', 'workflow.demarrer', 'workflow.commenter',
+            'decision.voir', 'decision.creer',
             'dashboard.direction',
         ]);
 
@@ -253,6 +313,8 @@ class RolesPermissionsSeeder extends Seeder
             'risque.voir',
             'document.voir', 'document.deposer', 'document.telecharger',
             'rapport.voir', 'rapport.creer', 'rapport.modifier',
+            'workflow.voir', 'workflow.commenter',
+            'decision.voir',
             'dashboard.service',
         ]);
 
@@ -268,6 +330,8 @@ class RolesPermissionsSeeder extends Seeder
             'alerte.voir',
             'document.voir', 'document.deposer', 'document.telecharger',
             'rapport.voir',
+            'workflow.voir',
+            'decision.voir',
             'dashboard.service',
         ]);
 
@@ -281,8 +345,15 @@ class RolesPermissionsSeeder extends Seeder
             'alerte.voir', 'risque.voir',
             'document.voir', 'document.telecharger', 'document.voir_confidentiel',
             'rapport.voir', 'rapport.exporter',
+            'workflow.voir',
+            'decision.voir',
+            'audit_event.voir',
             'dashboard.audit',
             'admin.audit_log',
+            'parametres.journal.voir',
+            'parametres.generaux.voir',
+            'parametres.papa.voir',
+            'parametres.referentiels.voir',
         ]);
 
         // Contrôle Financier Central
@@ -293,6 +364,9 @@ class RolesPermissionsSeeder extends Seeder
             'activite.voir', 'activite.voir_toutes_directions',
             'document.voir', 'document.telecharger', 'document.voir_confidentiel',
             'rapport.voir', 'rapport.exporter',
+            'workflow.voir',
+            'decision.voir',
+            'audit_event.voir',
             'dashboard.audit',
             'admin.audit_log',
         ]);
@@ -304,6 +378,9 @@ class RolesPermissionsSeeder extends Seeder
             'activite.voir',
             'document.voir', 'document.deposer', 'document.telecharger', 'document.voir_confidentiel',
             'rapport.voir', 'rapport.exporter',
+            'workflow.voir',
+            'decision.voir',
+            'audit_event.voir',
             'admin.audit_log',
         ]);
 
@@ -316,12 +393,29 @@ class RolesPermissionsSeeder extends Seeder
             'indicateur.voir', 'indicateur.creer', 'indicateur.modifier', 'indicateur.saisir_valeur',
             'activite.voir', 'activite.creer', 'activite.modifier', 'activite.mettre_a_jour_avancement',
             'tache.voir', 'tache.creer', 'tache.modifier',
-            'budget.voir', 'budget.creer', 'budget.modifier',
+            'budget.voir', 'budget.creer', 'budget.modifier', 'budget.supprimer',
             'alerte.voir', 'alerte.traiter',
             'risque.voir', 'risque.creer', 'risque.modifier',
             'document.voir', 'document.deposer', 'document.modifier', 'document.telecharger',
             'rapport.voir', 'rapport.creer', 'rapport.modifier', 'rapport.exporter',
+            'workflow.voir', 'workflow.demarrer', 'workflow.commenter',
+            'decision.voir', 'decision.creer',
+            'notification_rule.gerer',
             'admin.parametres',
+            // Paramètres
+            'parametres.generaux.voir', 'parametres.generaux.modifier',
+            'parametres.papa.voir', 'parametres.papa.modifier', 'parametres.papa.archiver',
+            'parametres.referentiels.voir', 'parametres.referentiels.gerer',
+            'parametres.libelles.voir', 'parametres.libelles.modifier',
+            'parametres.rbm.voir', 'parametres.rbm.modifier',
+            'parametres.budget.voir', 'parametres.budget.modifier',
+            'parametres.alertes.voir', 'parametres.alertes.modifier',
+            'parametres.ged.voir', 'parametres.ged.modifier',
+            'parametres.workflows.voir', 'parametres.workflows.modifier',
+            'parametres.droits.voir',
+            'parametres.affichage.voir', 'parametres.affichage.modifier',
+            'parametres.journal.voir',
+            'parametres.sauvegardes.voir', 'parametres.sauvegardes.exporter',
         ]);
 
         // Conseiller Juridique
@@ -332,6 +426,7 @@ class RolesPermissionsSeeder extends Seeder
             'activite.voir',
             'document.voir', 'document.telecharger', 'document.voir_confidentiel',
             'rapport.voir',
+            'decision.voir',
             'risque.voir',
         ]);
 
@@ -343,6 +438,7 @@ class RolesPermissionsSeeder extends Seeder
             'indicateur.voir', 'activite.voir',
             'document.voir', 'document.telecharger',
             'rapport.voir',
+            'decision.voir',
         ]);
 
         $this->command->info('Rôles et permissions créés avec succès.');

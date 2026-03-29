@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion — TB-PAPA-CEEAC</title>
+    <title>Connexion - TB-PAPA-CEEAC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
@@ -11,27 +11,23 @@
 
     <div class="w-full max-w-md">
 
-        <!-- Logo / En-tête CEEAC -->
         <div class="text-center mb-8">
             <div class="inline-flex items-center justify-center w-20 h-20 bg-white rounded-2xl shadow-xl mb-4">
-                <!-- Emblème CEEAC (placeholder) -->
                 <div class="text-indigo-700 text-3xl font-black">C</div>
             </div>
             <h1 class="text-white text-2xl font-bold tracking-tight">TB-PAPA-CEEAC</h1>
             <p class="text-indigo-300 text-sm mt-1">
-                Tableau de Bord — Plan d'Action Prioritaire Annuel
+                Tableau de Bord - Plan d'Action Prioritaire Annuel
             </p>
             <p class="text-slate-400 text-xs mt-0.5">
-                Commission de la CEEAC — Secrétariat Général
+                Commission de la CEEAC - Secretariat General
             </p>
         </div>
 
-        <!-- Carte de connexion -->
         <div class="bg-white rounded-2xl shadow-2xl p-8">
             <h2 class="text-lg font-bold text-gray-800 mb-1">Connexion</h2>
-            <p class="text-sm text-gray-500 mb-6">Accès réservé aux agents autorisés</p>
+            <p class="text-sm text-gray-500 mb-6">Acces reserve aux agents autorises</p>
 
-            <!-- Message d'erreur global -->
             @if(session('status'))
             <div class="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
                 {{ session('status') }}
@@ -50,7 +46,6 @@
             <form method="POST" action="{{ route('login') }}" class="space-y-4">
                 @csrf
 
-                <!-- Email -->
                 <div>
                     <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
                         Adresse e-mail
@@ -70,7 +65,6 @@
                     </div>
                 </div>
 
-                <!-- Mot de passe -->
                 <div>
                     <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
                         Mot de passe
@@ -81,14 +75,13 @@
                         </span>
                         <input type="password" id="password" name="password"
                                autocomplete="current-password"
-                               placeholder="••••••••"
+                               placeholder="........"
                                class="w-full pl-9 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm
                                       focus:ring-2 focus:ring-indigo-500 focus:border-transparent
                                       @error('password') border-red-500 @enderror">
                     </div>
                 </div>
 
-                <!-- Se souvenir -->
                 <div class="flex items-center justify-between">
                     <label class="flex items-center space-x-2 cursor-pointer">
                         <input type="checkbox" name="remember" id="remember"
@@ -99,7 +92,7 @@
                     @if(Route::has('password.request'))
                     <a href="{{ route('password.request') }}"
                        class="text-sm text-indigo-600 hover:text-indigo-800 hover:underline">
-                        Mot de passe oublié ?
+                        Mot de passe oublie ?
                     </a>
                     @endif
                 </div>
@@ -112,10 +105,9 @@
             </form>
         </div>
 
-        <!-- Footer -->
         <div class="text-center mt-6 text-xs text-slate-500">
-            <p>Usage strictement réservé au personnel autorisé de la CEEAC</p>
-            <p class="mt-1">Toute tentative d'accès non autorisé est journalisée et punissable.</p>
+            <p>Usage strictement reserve au personnel autorise de la CEEAC</p>
+            <p class="mt-1">Toute tentative d'acces non autorise est journalisee et punissable.</p>
         </div>
 
         <div class="text-center mt-4">

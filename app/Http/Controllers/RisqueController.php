@@ -11,7 +11,7 @@ class RisqueController extends Controller
 {
     public function index(Papa $papa)
     {
-        $this->authorize('papa.voir');
+        $this->authorize('risque.voir');
 
         $risques = Risque::where('papa_id', $papa->id)
             ->with('responsable')
@@ -43,7 +43,7 @@ class RisqueController extends Controller
 
     public function create(Request $request, Papa $papa)
     {
-        $this->authorize('papa.modifier');
+        $this->authorize('risque.creer');
         abort_if(!$papa->estEditable(), 403, 'Ce PAPA est verrouillé.');
 
         $responsables = User::actif()->orderBy('name')->get(['id', 'name', 'prenom']);
@@ -53,7 +53,7 @@ class RisqueController extends Controller
 
     public function store(Request $request, Papa $papa)
     {
-        $this->authorize('papa.modifier');
+        $this->authorize('risque.creer');
         abort_if(!$papa->estEditable(), 403, 'Ce PAPA est verrouillé.');
 
         $data = $request->validate([
@@ -89,7 +89,7 @@ class RisqueController extends Controller
 
     public function edit(Papa $papa, Risque $risque)
     {
-        $this->authorize('papa.modifier');
+        $this->authorize('risque.modifier');
         abort_if(!$papa->estEditable(), 403, 'Ce PAPA est verrouillé.');
         abort_if($risque->papa_id !== $papa->id, 404);
 
@@ -100,7 +100,7 @@ class RisqueController extends Controller
 
     public function update(Request $request, Papa $papa, Risque $risque)
     {
-        $this->authorize('papa.modifier');
+        $this->authorize('risque.modifier');
         abort_if(!$papa->estEditable(), 403, 'Ce PAPA est verrouillé.');
         abort_if($risque->papa_id !== $papa->id, 404);
 
@@ -131,7 +131,7 @@ class RisqueController extends Controller
 
     public function destroy(Papa $papa, Risque $risque)
     {
-        $this->authorize('papa.modifier');
+        $this->authorize('risque.supprimer');
         abort_if($risque->papa_id !== $papa->id, 404);
 
         $risque->delete();

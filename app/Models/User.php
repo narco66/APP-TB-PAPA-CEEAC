@@ -60,7 +60,18 @@ class User extends Authenticatable
 
     public function notificationsNonLues(): HasMany
     {
-        return $this->hasMany(NotificationApp::class)->whereNull('lue_le');
+        return $this->hasMany(NotificationApp::class)->nonLues();
+    }
+
+    public function notificationSummary(): array
+    {
+        $query = $this->notificationsApp();
+
+        return [
+            'total' => (clone $query)->count(),
+            'non_lues' => (clone $query)->nonLues()->count(),
+            'lues' => (clone $query)->lues()->count(),
+        ];
     }
 
     // ─── Scopes ─────────────────────────────────────────────────

@@ -2,16 +2,19 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Document extends Model
 {
-    use SoftDeletes;
+    use HasFactory, SoftDeletes, LogsActivity;
 
     protected $table = 'documents';
 
@@ -35,7 +38,13 @@ class Document extends Model
         ];
     }
 
-    // ─── Relations ──────────────────────────────────────────────
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->setDescriptionForEvent(fn (string $eventName) => "Document {$this->reference} : {$eventName}");
+    }
 
     public function documentable(): MorphTo
     {
@@ -67,7 +76,10 @@ class Document extends Model
         return $this->hasMany(Document::class, 'version_precedente_id');
     }
 
-    // ─── Helpers ────────────────────────────────────────────────
+    public function decisionAttachments(): HasMany
+    {
+        return $this->hasMany(DecisionAttachment::class);
+    }
 
     public function urlTelechargement(): string
     {
@@ -77,45 +89,59 @@ class Document extends Model
     public function tailleLisible(): string
     {
         $bytes = $this->taille_octets ?? 0;
-        if ($bytes >= 1048576) return round($bytes / 1048576, 2) . ' Mo';
-        if ($bytes >= 1024) return round($bytes / 1024, 2) . ' Ko';
+
+        if ($bytes >= 1048576) {
+            return round($bytes / 1048576, 2) . ' Mo';
+        }
+
+        if ($bytes >= 1024) {
+            return round($bytes / 1024, 2) . ' Ko';
+        }
+
         return $bytes . ' octets';
     }
 
     public function estEditable(): bool
     {
-        return !$this->est_archive && $this->statut !== 'archive';
+        return ! $this->est_archive && $this->statut !== 'archive';
     }
 
     public function verifierIntegrite(): bool
     {
-        if (!$this->hash_sha256) return true;
+        if (! $this->hash_sha256) {
+            return true;
+        }
+
         $disk = Storage::disk(config('app.ged_disk', 'local'));
-        if (!$disk->exists($this->chemin_fichier)) return false;
+
+        if (! $disk->exists($this->chemin_fichier)) {
+            return false;
+        }
+
         return hash_file('sha256', $disk->path($this->chemin_fichier)) === $this->hash_sha256;
     }
 
     public function couleurConfidentialite(): string
     {
-        return match($this->confidentialite) {
-            'public'                   => 'green',
-            'interne'                  => 'blue',
-            'confidentiel'             => 'orange',
+        return match ($this->confidentialite) {
+            'public' => 'green',
+            'interne' => 'blue',
+            'confidentiel' => 'orange',
             'strictement_confidentiel' => 'red',
-            default                    => 'gray',
+            default => 'gray',
         };
     }
 
     public function iconeExtension(): string
     {
-        return match(strtolower($this->extension ?? '')) {
-            'pdf'          => '📄',
-            'doc', 'docx'  => '📝',
-            'xls', 'xlsx'  => '📊',
-            'ppt', 'pptx'  => '📑',
-            'jpg', 'jpeg', 'png', 'gif' => '🖼️',
-            'zip', 'rar'   => '📦',
-            default        => '📎',
+        return match (strtolower($this->extension ?? '')) {
+            'pdf' => 'PDF',
+            'doc', 'docx' => 'DOC',
+            'xls', 'xlsx' => 'XLS',
+            'ppt', 'pptx' => 'PPT',
+            'jpg', 'jpeg', 'png', 'gif' => 'IMG',
+            'zip', 'rar' => 'ZIP',
+            default => 'FIC',
         };
     }
 }

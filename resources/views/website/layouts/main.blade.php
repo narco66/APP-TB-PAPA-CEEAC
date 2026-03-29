@@ -96,17 +96,17 @@
         </div>
         <div class="flex items-center gap-4">
             <div class="flex items-center gap-2 text-xs">
-                <a href="#" class="text-white font-semibold border-b border-gold-400 pb-0.5">FR</a>
+                <a href="{{ route('website.home', ['lang' => 'fr']) }}" class="text-white font-semibold border-b border-gold-400 pb-0.5">FR</a>
                 <span class="text-blue-400">|</span>
-                <a href="#" class="text-blue-200 hover:text-white">EN</a>
+                <a href="{{ route('website.home', ['lang' => 'en']) }}" class="text-blue-200 hover:text-white">EN</a>
                 <span class="text-blue-400">|</span>
-                <a href="#" class="text-blue-200 hover:text-white">PT</a>
+                <a href="{{ route('website.home', ['lang' => 'pt']) }}" class="text-blue-200 hover:text-white">PT</a>
             </div>
             <div class="flex items-center gap-2 ml-2">
-                <a href="#" class="text-blue-200 hover:text-gold-400 text-sm"><i class="fab fa-facebook-f"></i></a>
-                <a href="#" class="text-blue-200 hover:text-gold-400 text-sm"><i class="fab fa-twitter"></i></a>
-                <a href="#" class="text-blue-200 hover:text-gold-400 text-sm"><i class="fab fa-linkedin-in"></i></a>
-                <a href="#" class="text-blue-200 hover:text-gold-400 text-sm"><i class="fab fa-youtube"></i></a>
+                <a href="{{ route('website.contact') }}" class="text-blue-200 hover:text-gold-400 text-sm"><i class="fab fa-facebook-f"></i></a>
+                <a href="{{ route('website.contact') }}" class="text-blue-200 hover:text-gold-400 text-sm"><i class="fab fa-twitter"></i></a>
+                <a href="{{ route('website.contact') }}" class="text-blue-200 hover:text-gold-400 text-sm"><i class="fab fa-linkedin-in"></i></a>
+                <a href="{{ route('website.contact') }}" class="text-blue-200 hover:text-gold-400 text-sm"><i class="fab fa-youtube"></i></a>
             </div>
             <a href="{{ route('login') }}" class="ml-2 text-xs bg-gold-500 text-white px-3 py-1 rounded hover:bg-gold-600 transition" style="background:#C4922A;">
                 <i class="fas fa-lock mr-1"></i> Espace membres
@@ -139,7 +139,7 @@
 
                 <!-- À propos dropdown -->
                 <div class="relative" x-data="{ open: false }" @mouseenter="open=true" @mouseleave="open=false">
-                    <button class="nav-link flex items-center gap-1 {{ request()->routeIs('website.a-propos*','website.historique*','website.vision*','website.organes*','website.president*','website.etats-membres*') ? 'active' : '' }}">
+                    <button type="button" class="nav-link flex items-center gap-1 {{ request()->routeIs('website.a-propos*','website.historique*','website.vision*','website.organes*','website.president*','website.etats-membres*') ? 'active' : '' }}">
                         À propos <i class="fas fa-chevron-down text-xs"></i>
                     </button>
                     <div x-show="open" x-cloak x-transition class="dropdown-menu absolute top-full left-0 rounded-b-lg z-50 py-1">
@@ -154,7 +154,7 @@
 
                 <!-- Domaines dropdown -->
                 <div class="relative" x-data="{ open: false }" @mouseenter="open=true" @mouseleave="open=false">
-                    <button class="nav-link flex items-center gap-1 {{ request()->routeIs('website.domaine*') ? 'active' : '' }}">
+                    <button type="button" class="nav-link flex items-center gap-1 {{ request()->routeIs('website.domaine*') ? 'active' : '' }}">
                         Domaines d'action <i class="fas fa-chevron-down text-xs"></i>
                     </button>
                     <div x-show="open" x-cloak x-transition class="dropdown-menu absolute top-full left-0 rounded-b-lg z-50 py-1">
@@ -172,7 +172,7 @@
 
                 <!-- Actualités dropdown -->
                 <div class="relative" x-data="{ open: false }" @mouseenter="open=true" @mouseleave="open=false">
-                    <button class="nav-link flex items-center gap-1 {{ request()->routeIs('website.actualites*','website.publications*','website.evenements*','website.communiques*') ? 'active' : '' }}">
+                    <button type="button" class="nav-link flex items-center gap-1 {{ request()->routeIs('website.actualites*','website.publications*','website.evenements*','website.communiques*') ? 'active' : '' }}">
                         Actualités <i class="fas fa-chevron-down text-xs"></i>
                     </button>
                     <div x-show="open" x-cloak x-transition class="dropdown-menu absolute top-full left-0 rounded-b-lg z-50 py-1">
@@ -189,11 +189,11 @@
 
             <!-- Search + Mobile toggle -->
             <div class="flex items-center gap-3">
-                <button class="hidden lg:flex items-center gap-2 text-sm text-gray-500 border border-gray-200 rounded-lg px-3 py-1.5 hover:border-gold-400 hover:text-navy-500 transition" style="color:#6b7280;">
+                <button type="button" class="hidden lg:flex items-center gap-2 text-sm text-gray-500 border border-gray-200 rounded-lg px-3 py-1.5 hover:border-gold-400 hover:text-navy-500 transition" style="color:#6b7280;">
                     <i class="fas fa-search text-xs"></i>
                     <span class="text-xs">Rechercher…</span>
                 </button>
-                <button @click="mobileMenuOpen = !mobileMenuOpen" class="lg:hidden p-2 rounded-lg hover:bg-gray-100" style="color:#0A2157;">
+                <button type="button" @click="mobileMenuOpen = !mobileMenuOpen" class="lg:hidden p-2 rounded-lg hover:bg-gray-100" style="color:#0A2157;">
                     <i class="fas fa-bars text-xl"></i>
                 </button>
             </div>
@@ -208,7 +208,7 @@
             <a href="{{ route('website.home') }}" class="block px-3 py-2 text-sm font-medium rounded hover:bg-gray-50" style="color:#0A2157;">Accueil</a>
 
             <div x-data="{ open: false }">
-                <button @click="open = !open" class="w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded hover:bg-gray-50" style="color:#0A2157;">
+                <button type="button" @click="open = !open" class="w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded hover:bg-gray-50" style="color:#0A2157;">
                     À propos <i class="fas fa-chevron-down text-xs" :class="open ? 'rotate-180' : ''" style="transition:.2s"></i>
                 </button>
                 <div x-show="open" class="ml-4 space-y-1 mt-1">
@@ -222,7 +222,7 @@
             </div>
 
             <div x-data="{ open: false }">
-                <button @click="open = !open" class="w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded hover:bg-gray-50" style="color:#0A2157;">
+                <button type="button" @click="open = !open" class="w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded hover:bg-gray-50" style="color:#0A2157;">
                     Domaines d'action <i class="fas fa-chevron-down text-xs" :class="open ? 'rotate-180' : ''" style="transition:.2s"></i>
                 </button>
                 <div x-show="open" class="ml-4 space-y-1 mt-1">
@@ -238,7 +238,7 @@
             <a href="{{ route('website.programmes') }}" class="block px-3 py-2 text-sm font-medium rounded hover:bg-gray-50" style="color:#0A2157;">Programmes</a>
 
             <div x-data="{ open: false }">
-                <button @click="open = !open" class="w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded hover:bg-gray-50" style="color:#0A2157;">
+                <button type="button" @click="open = !open" class="w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded hover:bg-gray-50" style="color:#0A2157;">
                     Actualités <i class="fas fa-chevron-down text-xs" :class="open ? 'rotate-180' : ''" style="transition:.2s"></i>
                 </button>
                 <div x-show="open" class="ml-4 space-y-1 mt-1">
@@ -313,16 +313,16 @@
                     la paix, la sécurité et le développement durable de ses 11 États membres.
                 </p>
                 <div class="flex items-center gap-3">
-                    <a href="#" class="h-8 w-8 rounded-full bg-blue-800 hover:bg-gold-500 flex items-center justify-center text-sm transition" style="hover:background:#C4922A;">
+                    <a href="{{ route('website.contact') }}" class="h-8 w-8 rounded-full bg-blue-800 hover:bg-gold-500 flex items-center justify-center text-sm transition" style="hover:background:#C4922A;">
                         <i class="fab fa-facebook-f"></i>
                     </a>
-                    <a href="#" class="h-8 w-8 rounded-full bg-blue-800 hover:bg-gold-500 flex items-center justify-center text-sm transition">
+                    <a href="{{ route('website.contact') }}" class="h-8 w-8 rounded-full bg-blue-800 hover:bg-gold-500 flex items-center justify-center text-sm transition">
                         <i class="fab fa-twitter"></i>
                     </a>
-                    <a href="#" class="h-8 w-8 rounded-full bg-blue-800 hover:bg-gold-500 flex items-center justify-center text-sm transition">
+                    <a href="{{ route('website.contact') }}" class="h-8 w-8 rounded-full bg-blue-800 hover:bg-gold-500 flex items-center justify-center text-sm transition">
                         <i class="fab fa-linkedin-in"></i>
                     </a>
-                    <a href="#" class="h-8 w-8 rounded-full bg-blue-800 hover:bg-gold-500 flex items-center justify-center text-sm transition">
+                    <a href="{{ route('website.contact') }}" class="h-8 w-8 rounded-full bg-blue-800 hover:bg-gold-500 flex items-center justify-center text-sm transition">
                         <i class="fab fa-youtube"></i>
                     </a>
                 </div>

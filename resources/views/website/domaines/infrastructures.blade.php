@@ -232,11 +232,11 @@
                 <span class="text-2xl">&#9876;</span>
                 <div><h4 class="font-semibold text-blue-950">Paix &amp; Sécurité</h4><p class="text-sm text-gray-500">COPAX, FOMAC, MARAC</p></div>
             </a>
-            <a href="{{ route('website.domaine', 'integration-regionale') }}" class="bg-white border border-gray-200 rounded-xl p-5 hover:border-amber-400 hover:shadow-sm transition flex gap-4 items-start">
+            <a href="{{ route('website.domaine', 'integration-economique') }}" class="bg-white border border-gray-200 rounded-xl p-5 hover:border-amber-400 hover:shadow-sm transition flex gap-4 items-start">
                 <span class="text-2xl">&#127970;</span>
                 <div><h4 class="font-semibold text-blue-950">Intégration régionale</h4><p class="text-sm text-gray-500">Marché commun, libre circulation</p></div>
             </a>
-            <a href="{{ route('website.domaine', 'commerce') }}" class="bg-white border border-gray-200 rounded-xl p-5 hover:border-amber-400 hover:shadow-sm transition flex gap-4 items-start">
+            <a href="{{ route('website.domaine', 'commerce-investissement') }}" class="bg-white border border-gray-200 rounded-xl p-5 hover:border-amber-400 hover:shadow-sm transition flex gap-4 items-start">
                 <span class="text-2xl">&#128181;</span>
                 <div><h4 class="font-semibold text-blue-950">Commerce</h4><p class="text-sm text-gray-500">Échanges, investissement</p></div>
             </a>

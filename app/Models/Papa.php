@@ -13,8 +13,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class Papa extends Model
 {
-    use HasFactory;
-    use SoftDeletes, LogsActivity;
+    use HasFactory, SoftDeletes, LogsActivity;
 
     protected $table = 'papas';
 
@@ -46,10 +45,8 @@ class Papa extends Model
         return LogOptions::defaults()
             ->logFillable()
             ->logOnlyDirty()
-            ->setDescriptionForEvent(fn(string $eventName) => "PAPA {$this->code} : {$eventName}");
+            ->setDescriptionForEvent(fn (string $eventName) => "PAPA {$this->code} : {$eventName}");
     }
-
-    // ─── Relations ──────────────────────────────────────────────
 
     public function actionsPrioritaires(): HasMany
     {
@@ -81,9 +78,24 @@ class Papa extends Model
         return $this->hasMany(ValidationWorkflow::class);
     }
 
+    public function workflowInstances(): HasMany
+    {
+        return $this->hasMany(WorkflowInstance::class);
+    }
+
+    public function decisions(): HasMany
+    {
+        return $this->hasMany(Decision::class);
+    }
+
+    public function auditEvents(): HasMany
+    {
+        return $this->hasMany(AuditEvent::class);
+    }
+
     public function cloneDePapa(): BelongsTo
     {
-        return $this->belongsTo(Papa::class, 'clone_de_papa_id');
+        return $this->belongsTo(self::class, 'clone_de_papa_id');
     }
 
     public function creePar(): BelongsTo
@@ -100,8 +112,6 @@ class Papa extends Model
     {
         return $this->belongsTo(User::class, 'archived_by');
     }
-
-    // ─── Scopes métier ─────────────────────────────────────────
 
     public function scopeActif($query)
     {
@@ -123,8 +133,6 @@ class Papa extends Model
         return $query->where('annee', $annee);
     }
 
-    // ─── Helpers métier ─────────────────────────────────────────
-
     public function estArchive(): bool
     {
         return $this->statut === 'archive';
@@ -137,7 +145,7 @@ class Papa extends Model
 
     public function estEditable(): bool
     {
-        return !$this->estVerrouille() && in_array($this->statut, ['brouillon', 'en_cours', 'en_execution']);
+        return ! $this->estVerrouille() && in_array($this->statut, ['brouillon', 'valide', 'en_execution']);
     }
 
     public function peutEtreValide(): bool
@@ -147,29 +155,29 @@ class Papa extends Model
 
     public function couleurStatut(): string
     {
-        return match($this->statut) {
-            'brouillon'     => 'gray',
-            'soumis'        => 'blue',
+        return match ($this->statut) {
+            'brouillon' => 'gray',
+            'soumis' => 'blue',
             'en_validation' => 'yellow',
-            'valide'        => 'green',
-            'en_execution'  => 'indigo',
-            'cloture'       => 'orange',
-            'archive'       => 'red',
-            default         => 'gray',
+            'valide' => 'green',
+            'en_execution' => 'indigo',
+            'cloture' => 'orange',
+            'archive' => 'red',
+            default => 'gray',
         };
     }
 
     public function libelleStatut(): string
     {
-        return match($this->statut) {
-            'brouillon'     => 'Brouillon',
-            'soumis'        => 'Soumis',
+        return match ($this->statut) {
+            'brouillon' => 'Brouillon',
+            'soumis' => 'Soumis',
             'en_validation' => 'En validation',
-            'valide'        => 'Validé',
-            'en_execution'  => 'En exécution',
-            'cloture'       => 'Clôturé',
-            'archive'       => 'Archivé',
-            default         => ucfirst($this->statut),
+            'valide' => 'Valide',
+            'en_execution' => 'En execution',
+            'cloture' => 'Cloture',
+            'archive' => 'Archive',
+            default => ucfirst($this->statut),
         };
     }
 }

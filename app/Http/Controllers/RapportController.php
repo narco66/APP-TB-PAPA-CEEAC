@@ -17,9 +17,12 @@ class RapportController extends Controller
 
     public function index(Request $request)
     {
-        $this->authorize('papa.voir');
+        $user = $request->user();
+
+        $this->authorize('viewAny', Rapport::class);
 
         $query = Rapport::with(['papa', 'direction', 'redigePar'])
+            ->visibleTo($user)
             ->orderByDesc('created_at');
 
         if ($request->filled('papa_id')) {
@@ -33,16 +36,16 @@ class RapportController extends Controller
         }
 
         $rapports = $query->paginate(20);
-        $papas    = Papa::orderByDesc('annee')->get(['id', 'code', 'libelle']);
+        $papas = Papa::orderByDesc('annee')->get(['id', 'code', 'libelle']);
 
         return view('rapports.index', compact('rapports', 'papas'));
     }
 
     public function create(Request $request)
     {
-        $this->authorize('papa.voir');
+        $this->authorize('create', Rapport::class);
 
-        $papa  = Papa::findOrFail($request->get('papa_id', Papa::latest()->first()?->id));
+        $papa = Papa::findOrFail($request->get('papa_id', Papa::latest()->first()?->id));
         $papas = Papa::orderByDesc('annee')->get(['id', 'code', 'libelle']);
 
         return view('rapports.create', compact('papa', 'papas'));
@@ -50,50 +53,47 @@ class RapportController extends Controller
 
     public function store(Request $request)
     {
-        $this->authorize('papa.voir');
+        $this->authorize('create', Rapport::class);
 
         $data = $request->validate([
-            'papa_id'                  => 'required|exists:papas,id',
-            'titre'                    => 'required|string|max:300',
-            'type_rapport'             => 'required|in:mensuel,trimestriel,semestriel,annuel,ponctuel',
-            'periode_couverte'         => 'required|string|max:100',
-            'annee'                    => 'required|integer',
-            'numero_periode'           => 'nullable|integer',
-            'faits_saillants'          => 'nullable|string',
-            'difficultes_rencontrees'  => 'nullable|string',
-            'recommandations'          => 'nullable|string',
-            'perspectives'             => 'nullable|string',
+            'papa_id' => 'required|exists:papas,id',
+            'titre' => 'required|string|max:300',
+            'type_rapport' => 'required|in:mensuel,trimestriel,semestriel,annuel,ponctuel',
+            'periode_couverte' => 'required|string|max:100',
+            'annee' => 'required|integer',
+            'numero_periode' => 'nullable|integer',
+            'faits_saillants' => 'nullable|string',
+            'difficultes_rencontrees' => 'nullable|string',
+            'recommandations' => 'nullable|string',
+            'perspectives' => 'nullable|string',
         ]);
 
         $papa = Papa::findOrFail($data['papa_id']);
 
-        $data['taux_execution_physique']   = $papa->taux_execution_physique;
+        $data['taux_execution_physique'] = $papa->taux_execution_physique;
         $data['taux_execution_financiere'] = $papa->taux_execution_financiere;
-        $data['statut']                    = 'brouillon';
-        $data['redige_par']                = $request->user()->id;
+        $data['statut'] = 'brouillon';
+        $data['redige_par'] = $request->user()->id;
 
         $rapport = Rapport::create($data);
 
         return redirect()
             ->route('rapports.show', $rapport)
-            ->with('success', 'Rapport créé.');
+            ->with('success', 'Rapport cree.');
     }
 
     public function show(Rapport $rapport)
     {
-        $this->authorize('papa.voir');
+        $this->authorize('view', $rapport);
 
         $rapport->load(['papa.actionsPrioritaires', 'direction', 'redigePar']);
 
         return view('rapports.show', compact('rapport'));
     }
 
-    /**
-     * Export PDF du rapport narratif
-     */
     public function exportPdf(Rapport $rapport)
     {
-        $this->authorize('papa.voir');
+        $this->authorize('export', $rapport);
 
         $rapport->load(['papa.actionsPrioritaires.objectifsImmediat.resultatsAttendus.activites', 'direction', 'redigePar']);
 
@@ -103,7 +103,7 @@ class RapportController extends Controller
         $pdf = Pdf::loadView('rapports.pdf', compact('rapport', 'papa', 'kpis'))
             ->setPaper('a4', 'portrait')
             ->setOptions([
-                'defaultFont'   => 'DejaVu Sans',
+                'defaultFont' => 'DejaVu Sans',
                 'isRemoteEnabled' => false,
                 'isHtml5ParserEnabled' => true,
                 'isCssFloatEnabled' => true,
@@ -114,27 +114,22 @@ class RapportController extends Controller
         return $pdf->download(str_replace(' ', '_', $filename));
     }
 
-    /**
-     * Export Excel complet du PAPA (3 onglets : activités, indicateurs, budget)
-     */
     public function exportExcel(Papa $papa)
     {
-        $this->authorize('papa.voir');
+        $this->authorize('rapport.exporter');
+        $this->authorize('voir', $papa);
 
-        // Recalcul à la demande avant export
-        RecalculerTauxPapaJob::dispatchSync($papa);
+        RecalculerTauxPapaJob::dispatch($papa);
 
         $filename = 'PAPA_' . $papa->code . '_' . now()->format('Ymd_His') . '.xlsx';
 
         return Excel::download(new PapaExport($papa->fresh()), $filename);
     }
 
-    /**
-     * Export PDF synthèse PAPA (tableau de bord exécutif)
-     */
     public function exportPapaPdf(Papa $papa)
     {
-        $this->authorize('papa.voir');
+        $this->authorize('rapport.exporter');
+        $this->authorize('voir', $papa);
 
         $papa->load(['actionsPrioritaires.objectifsImmediat.resultatsAttendus', 'budgets.partenaire']);
         $kpis = $this->dashboardService->kpisExecutif($papa);
@@ -150,23 +145,23 @@ class RapportController extends Controller
 
     public function valider(Rapport $rapport)
     {
-        $this->authorize('papa.modifier');
+        $this->authorize('valider', $rapport);
 
         $rapport->update([
-            'statut'    => 'valide',
+            'statut' => 'valide',
             'valide_par' => auth()->id(),
-            'valide_le'  => now(),
+            'valide_le' => now(),
         ]);
 
-        return back()->with('success', 'Rapport validé.');
+        return back()->with('success', 'Rapport valide.');
     }
 
     public function publier(Rapport $rapport)
     {
-        $this->authorize('papa.modifier');
+        $this->authorize('publier', $rapport);
 
         $rapport->update(['statut' => 'publie', 'publie_le' => now()]);
 
-        return back()->with('success', 'Rapport publié.');
+        return back()->with('success', 'Rapport publie.');
     }
 }

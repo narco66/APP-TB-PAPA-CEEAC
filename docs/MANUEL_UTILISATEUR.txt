@@ -1,0 +1,213 @@
+﻿MANUEL UTILISATEUR
+APP-TB-PAPA-CEEAC
+Version de demonstration
+Date: 29 mars 2026
+
+1. OBJET DE L'APPLICATION
+
+APP-TB-PAPA-CEEAC est une application de pilotage, de suivi et de tracabilite
+du Plan d'Action Prioritaire Annuel de la CEEAC.
+
+Elle permet de:
+- planifier et suivre les PAPAs;
+- piloter actions prioritaires, objectifs, resultats, activites et taches;
+- suivre les indicateurs;
+- gerer budgets et financements;
+- centraliser les documents GED;
+- executer les workflows de validation;
+- enregistrer les decisions institutionnelles;
+- surveiller alertes et risques;
+- consulter l'audit metier.
+
+2. ACCES
+
+URL locale:
+http://127.0.0.1:8000
+
+Connexion:
+- cliquer sur "Espace membres" depuis l'accueil;
+- ou ouvrir http://127.0.0.1:8000/login
+
+3. COMPTE DE DEMONSTRATION
+
+Compte principal:
+- admin@ceeac-eccas.org
+- Mot de passe: Admin@2025!
+
+4. NAVIGATION
+
+L'application comprend:
+- un tableau de bord selon le profil;
+- une barre laterale;
+- une barre superieure;
+- des listes avec filtres;
+- des fiches detaillees.
+
+5. TABLEAU DE BORD
+
+Le tableau de bord affiche:
+- taux d'execution;
+- repartition par departement;
+- budgets;
+- activites en retard;
+- alertes;
+- notifications;
+- tendances KPI.
+
+6. PAPA
+
+Un PAPA peut etre:
+- brouillon;
+- soumis;
+- valide;
+- archive.
+
+Actions courantes:
+- creer;
+- consulter;
+- modifier si editable;
+- soumettre;
+- valider ou rejeter;
+- archiver;
+- cloner.
+
+7. CHAINE DE RESULTAT
+
+La logique RBM suit:
+- Action prioritaire
+- Objectif immediat
+- Resultat attendu
+- Indicateur
+- Activite
+- Tache
+
+8. ACTIVITES ET TACHES
+
+Les activites peuvent comporter:
+- dates;
+- statut;
+- pourcentage de realisation;
+- taches;
+- jalons;
+- responsable;
+- documents;
+- observations.
+
+9. INDICATEURS
+
+Pour un indicateur, on peut suivre:
+- baseline;
+- cible;
+- unite;
+- frequence;
+- valeurs periodiques;
+- tendance;
+- performance.
+
+10. BUDGET
+
+Le module budget suit:
+- budget PAPA;
+- lignes budgetaires;
+- sources de financement;
+- previsions;
+- engagements;
+- consommation;
+- ecarts.
+
+11. GED
+
+Exemples de pieces:
+- note de cadrage;
+- rapport technique;
+- proces-verbal;
+- fiche de suivi;
+- justificatif;
+- compte rendu.
+
+12. WORKFLOW
+
+Le workflow permet de:
+- demarrer;
+- approuver;
+- rejeter avec motif;
+- commenter;
+- consulter l'historique.
+
+13. DECISIONS
+
+Une decision peut etre:
+- arbitrage;
+- validation;
+- orientation;
+- reaffectation budgetaire;
+- report;
+- suspension.
+
+Elle peut etre liee a:
+- un PAPA;
+- une action;
+- une activite;
+- un budget;
+- un document.
+
+14. ALERTES ET RISQUES
+
+Exemples:
+- activite en retard;
+- KPI faible;
+- document manquant;
+- budget critique;
+- blocage de validation.
+
+15. NOTIFICATIONS
+
+Fonctions:
+- consulter;
+- filtrer non lues ou lues;
+- marquer comme lue;
+- tout marquer comme lu.
+
+16. AUDIT METIER
+
+L'audit conserve la trace des actions critiques.
+Fonctions:
+- filtrer par module;
+- filtrer par niveau;
+- exporter en CSV;
+- voir l'objet source;
+- revenir a l'objet audite.
+
+17. ADMINISTRATION
+
+L'administrateur peut:
+- gerer l'acces;
+- consulter l'audit;
+- gerer les regles de notification.
+
+18. DEMONSTRATION RAPIDE
+
+1. Se connecter avec admin@ceeac-eccas.org
+2. Ouvrir le tableau de bord
+3. Consulter les PAPAs
+4. Ouvrir un workflow
+5. Consulter les decisions
+6. Ouvrir les notifications
+7. Ouvrir l'audit
+8. Exporter le CSV
+
+19. DEPANNAGE
+
+- Menu absent: verifier les permissions
+- Action refusee: verifier le statut et le role
+- PAPA non editable: il peut etre archive
+- Ecrans differents: l'interface depend du profil
+
+20. SUPPORT
+
+Verifier:
+- serveur Laravel demarre;
+- base migree et peuplee;
+- compte adapte a la demonstration.
+
+Manuel genere pour APP-TB-PAPA-CEEAC.

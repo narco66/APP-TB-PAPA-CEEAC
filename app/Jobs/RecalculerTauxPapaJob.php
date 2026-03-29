@@ -9,6 +9,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class RecalculerTauxPapaJob implements ShouldQueue
@@ -25,6 +26,11 @@ class RecalculerTauxPapaJob implements ShouldQueue
         Log::info("RecalculerTaux: début PAPA {$this->papa->code}");
 
         $service->recalculerTaux($this->papa);
+
+        // Invalider les caches du dashboard après recalcul
+        Cache::forget("kpis_executif_{$this->papa->id}");
+        Cache::forget("repartition_activites_{$this->papa->id}");
+        Cache::forget("comparatif_departements_{$this->papa->id}");
 
         Log::info("RecalculerTaux: fin PAPA {$this->papa->code} — taux physique = {$this->papa->fresh()->taux_execution_physique}%");
     }

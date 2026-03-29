@@ -10,6 +10,7 @@ use App\Models\Direction;
 use App\Models\Indicateur;
 use App\Models\Papa;
 use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class DashboardService
@@ -18,6 +19,13 @@ class DashboardService
      * KPIs consolidés pour le Président / VP
      */
     public function kpisExecutif(Papa $papa): array
+    {
+        return Cache::remember("kpis_executif_{$papa->id}", 900, function () use ($papa) {
+            return $this->computeKpisExecutif($papa);
+        });
+    }
+
+    private function computeKpisExecutif(Papa $papa): array
     {
         $totalAP       = $papa->actionsPrioritaires()->count();
         $apEnCours     = $papa->actionsPrioritaires()->where('statut', 'en_cours')->count();
@@ -68,34 +76,36 @@ class DashboardService
      */
     public function kpisDirection(Papa $papa, Direction $direction): array
     {
-        $activites = Activite::where('direction_id', $direction->id)
-            ->whereHas('resultatAttendu.objectifImmediats.actionPrioritaire', fn($q) => $q->where('papa_id', $papa->id))
-            ->get();
+        return Cache::remember("kpis_direction_{$papa->id}_{$direction->id}", 900, function () use ($papa, $direction) {
+            $activites = Activite::where('direction_id', $direction->id)
+                ->whereHas('resultatAttendu.objectifImmediats.actionPrioritaire', fn($q) => $q->where('papa_id', $papa->id))
+                ->get();
 
-        $tauxMoyen     = $activites->avg('taux_realisation') ?? 0;
-        $enRetard      = $activites->filter(fn($a) => $a->estEnRetard())->count();
-        $terminees     = $activites->where('statut', 'terminee')->count();
-        $enCours       = $activites->where('statut', 'en_cours')->count();
+            $tauxMoyen     = $activites->avg('taux_realisation') ?? 0;
+            $enRetard      = $activites->filter(fn($a) => $a->estEnRetard())->count();
+            $terminees     = $activites->where('statut', 'terminee')->count();
+            $enCours       = $activites->where('statut', 'en_cours')->count();
 
-        $budgetPrevu   = $activites->sum('budget_prevu');
-        $budgetEngage  = $activites->sum('budget_engage');
-        $budgetConso   = $activites->sum('budget_consomme');
+            $budgetPrevu   = $activites->sum('budget_prevu');
+            $budgetEngage  = $activites->sum('budget_engage');
+            $budgetConso   = $activites->sum('budget_consomme');
 
-        $indicateurs   = Indicateur::where('direction_id', $direction->id)->actif()->get();
-        $indEnAlerte   = $indicateurs->filter(fn($i) => in_array($i->niveauAlerte(), ['rouge', 'orange']))->count();
+            $indicateurs   = Indicateur::where('direction_id', $direction->id)->actif()->get();
+            $indEnAlerte   = $indicateurs->filter(fn($i) => in_array($i->niveauAlerte(), ['rouge', 'orange']))->count();
 
-        return [
-            'direction'            => $direction,
-            'taux_moyen_activites' => round($tauxMoyen, 2),
-            'total_activites'      => $activites->count(),
-            'activites_en_cours'   => $enCours,
-            'activites_terminees'  => $terminees,
-            'activites_en_retard'  => $enRetard,
-            'budget_prevu'         => $budgetPrevu,
-            'budget_engage'        => $budgetEngage,
-            'budget_consomme'      => $budgetConso,
-            'indicateurs_en_alerte' => $indEnAlerte,
-        ];
+            return [
+                'direction'            => $direction,
+                'taux_moyen_activites' => round($tauxMoyen, 2),
+                'total_activites'      => $activites->count(),
+                'activites_en_cours'   => $enCours,
+                'activites_terminees'  => $terminees,
+                'activites_en_retard'  => $enRetard,
+                'budget_prevu'         => $budgetPrevu,
+                'budget_engage'        => $budgetEngage,
+                'budget_consomme'      => $budgetConso,
+                'indicateurs_en_alerte' => $indEnAlerte,
+            ];
+        });
     }
 
     /**
@@ -127,14 +137,16 @@ class DashboardService
      */
     public function repartitionActivitesStatut(Papa $papa): array
     {
-        return Activite::whereHas(
-            'resultatAttendu.objectifImmediats.actionPrioritaire',
-            fn($q) => $q->where('papa_id', $papa->id)
-        )
-        ->selectRaw('statut, count(*) as total')
-        ->groupBy('statut')
-        ->pluck('total', 'statut')
-        ->toArray();
+        return Cache::remember("repartition_activites_{$papa->id}", 900, fn() =>
+            Activite::whereHas(
+                'resultatAttendu.objectifImmediats.actionPrioritaire',
+                fn($q) => $q->where('papa_id', $papa->id)
+            )
+            ->selectRaw('statut, count(*) as total')
+            ->groupBy('statut')
+            ->pluck('total', 'statut')
+            ->toArray()
+        );
     }
 
     /**
@@ -142,16 +154,18 @@ class DashboardService
      */
     public function comparatifDepartements(Papa $papa): array
     {
-        return $papa->actionsPrioritaires()
-            ->with('departement')
-            ->get()
-            ->groupBy('departement.libelle_court')
-            ->map(fn($aps) => [
-                'taux_moyen'  => round($aps->avg('taux_realisation'), 2),
-                'total'       => $aps->count(),
-                'en_cours'    => $aps->where('statut', 'en_cours')->count(),
-                'terminees'   => $aps->where('statut', 'termine')->count(),
-            ])
-            ->toArray();
+        return Cache::remember("comparatif_departements_{$papa->id}", 900, fn() =>
+            $papa->actionsPrioritaires()
+                ->with('departement')
+                ->get()
+                ->groupBy('departement.libelle_court')
+                ->map(fn($aps) => [
+                    'taux_moyen'  => round($aps->avg('taux_realisation'), 2),
+                    'total'       => $aps->count(),
+                    'en_cours'    => $aps->where('statut', 'en_cours')->count(),
+                    'terminees'   => $aps->where('statut', 'termine')->count(),
+                ])
+                ->toArray()
+        );
     }
 }

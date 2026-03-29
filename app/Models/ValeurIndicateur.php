@@ -4,9 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class ValeurIndicateur extends Model
 {
+    use LogsActivity;
+
     protected $table = 'valeurs_indicateurs';
 
     protected $fillable = [
@@ -25,6 +29,14 @@ class ValeurIndicateur extends Model
             'taux_realisation' => 'decimal:2',
             'valide_le' => 'datetime',
         ];
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->setDescriptionForEvent(fn(string $e) => "ValeurIndicateur ({$this->periode_libelle}) : {$e}");
     }
 
     // ─── Relations ──────────────────────────────────────────────
