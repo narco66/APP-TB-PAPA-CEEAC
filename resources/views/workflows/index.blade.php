@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'Workflows')
 
@@ -12,6 +12,10 @@
     <div>
         <h1 class="text-2xl font-bold text-gray-900">Workflows de validation</h1>
         <p class="text-sm text-gray-500">Suivi des circuits de validation démarrés sur les objets métiers.</p>
+    </div>
+
+    <div class="rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-800">
+        <span class="font-semibold">Périmètre de données :</span> {{ $scopeLabel }}
     </div>
 
     <div class="rounded-xl border border-gray-200 bg-white shadow-sm">

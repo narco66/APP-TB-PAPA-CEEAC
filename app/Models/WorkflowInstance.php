@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Route;
@@ -66,6 +67,24 @@ class WorkflowInstance extends Model
     public function actions(): HasMany
     {
         return $this->hasMany(WorkflowAction::class);
+    }
+
+    public function scopeVisibleTo(Builder $query, User $user): Builder
+    {
+        if ($user->resolveVisibilityScope()->isGlobal) {
+            return $query;
+        }
+
+        return $query->where(function (Builder $workflowQuery) use ($user) {
+            $workflowQuery
+                ->whereHas('papa', fn (Builder $papaQuery) => $papaQuery->visibleTo($user))
+                ->orWhere('demarre_par', $user->id);
+        });
+    }
+
+    public function canBeAccessedBy(User $user): bool
+    {
+        return static::query()->whereKey($this->id)->visibleTo($user)->exists();
     }
 
     public function auditTrailParams(): array

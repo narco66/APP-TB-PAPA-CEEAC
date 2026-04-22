@@ -11,10 +11,12 @@
             <h1 class="text-2xl font-bold text-gray-900">Départements</h1>
             <p class="text-sm text-gray-500 mt-1">Structure organisationnelle de la Commission CEEAC</p>
         </div>
+        @if($canManageDepartments)
         <a href="{{ route('admin.structure.departements.create') }}"
            class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg">
             <i class="fas fa-plus"></i> Nouveau département
         </a>
+        @endif
     </div>
 
     {{-- Fil d'Ariane --}}
@@ -25,6 +27,10 @@
         <i class="fas fa-chevron-right text-gray-300"></i>
         <span class="text-gray-700 font-medium">Départements</span>
     </nav>
+
+    <div class="mb-4 rounded-lg border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm text-indigo-800">
+        <i class="fas fa-shield-halved mr-2"></i>{{ $scopeLabel }}
+    </div>
 
     {{-- Sous-navigation structure --}}
     <div class="flex gap-2 mb-6 border-b border-gray-200">

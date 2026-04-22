@@ -1,6 +1,6 @@
 @extends('layouts.app')
 @section('title', $ap->code)
-@section('page-title', $ap->code . ' — ' . Str::limit($ap->libelle, 60))
+@section('page-title', $ap->code . ' - ' . Str::limit($ap->libelle, 60))
 
 @section('breadcrumbs')
     <li><i class="fas fa-chevron-right mx-2 text-xs"></i></li>
@@ -13,6 +13,10 @@
 
 @section('content')
 <div class="space-y-6" x-data="{ onglet: 'objectifs' }">
+
+    <div class="rounded-xl border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm text-indigo-800">
+        <span class="font-semibold">Périmètre de données :</span> {{ $scopeLabel }}
+    </div>
 
     <!-- En-tête -->
     <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
@@ -39,7 +43,7 @@
                 <div class="flex flex-wrap gap-4 text-xs text-gray-500 mt-2">
                     <span><i class="fas fa-bookmark mr-1"></i>PAPA : {{ $ap->papa?->code }}</span>
                     <span><i class="fas fa-sitemap mr-1"></i>{{ $ap->departement?->libelle ?? 'Tous départements' }}</span>
-                    <span><i class="fas fa-sort-numeric-up mr-1"></i>Ordre : {{ $ap->ordre ?? '—' }}</span>
+                    <span><i class="fas fa-sort-numeric-up mr-1"></i>Ordre : {{ $ap->ordre ?? '-' }}</span>
                 </div>
             </div>
             <div class="text-right">
@@ -57,8 +61,13 @@
         </div>
 
         <!-- Actions -->
-        @if($ap->estEditable())
         <div class="mt-4 flex flex-wrap gap-2">
+            <a href="{{ route('actions-prioritaires.print', $ap) }}"
+               target="_blank"
+               class="px-4 py-2 bg-white text-gray-700 rounded-lg text-sm border border-gray-200 hover:bg-gray-50 transition">
+                <i class="fas fa-print mr-1"></i>Version imprimable
+            </a>
+        @if($ap->estEditable())
             @can('papa.modifier')
             <a href="{{ route('actions-prioritaires.edit', $ap) }}"
                class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200 transition">
@@ -69,8 +78,8 @@
                 <i class="fas fa-plus mr-1"></i>Ajouter un OI
             </a>
             @endcan
-        </div>
         @endif
+        </div>
     </div>
 
     <!-- Description -->

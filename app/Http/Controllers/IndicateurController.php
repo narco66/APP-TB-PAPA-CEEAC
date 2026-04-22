@@ -7,6 +7,7 @@ use App\Models\Indicateur;
 use App\Models\ValeurIndicateur;
 use App\Models\Direction;
 use App\Models\User;
+use App\Services\Security\UserScopeResolver;
 use Illuminate\Http\Request;
 
 class IndicateurController extends Controller
@@ -18,11 +19,8 @@ class IndicateurController extends Controller
 
         $query = Indicateur::with(['direction', 'responsable', 'resultatAttendu'])
             ->actif()
+            ->visibleTo($user)
             ->orderBy('code');
-
-        if (!$user->can('activite.voir_toutes_directions') && $user->direction_id) {
-            $query->where('direction_id', $user->direction_id);
-        }
 
         if ($request->filled('type')) {
             $query->where('type_indicateur', $request->type);
@@ -32,17 +30,33 @@ class IndicateurController extends Controller
         }
 
         $indicateurs = $query->paginate(20)->withQueryString();
+        $scopeLabel = $user->scopeLabel();
 
-        return view('indicateurs.index', compact('indicateurs'));
+        return view('indicateurs.index', compact('indicateurs', 'scopeLabel'));
     }
 
     public function create()
     {
         $this->authorize('indicateur.creer');
-        $directions = Direction::actif()->orderBy('libelle')->get();
-        $users      = User::actif()->orderBy('name')->get();
+        $user = request()->user();
+        $resolver = app(UserScopeResolver::class);
+        $directions = $resolver
+            ->applyToQuery(Direction::actif()->orderBy('libelle'), $user, [
+                'departement' => 'departement_id',
+                'direction' => 'id',
+                'service' => null,
+            ])
+            ->get();
+        $users = $resolver
+            ->applyToQuery(User::actif()->orderBy('name'), $user, [
+                'departement' => 'departement_id',
+                'direction' => 'direction_id',
+                'service' => 'service_id',
+            ])
+            ->get();
+        $scopeLabel = $user->scopeLabel();
 
-        return view('indicateurs.create', compact('directions', 'users'));
+        return view('indicateurs.create', compact('directions', 'users', 'scopeLabel'));
     }
 
     public function store(StoreIndicateurRequest $request)
@@ -57,6 +71,7 @@ class IndicateurController extends Controller
     public function show(Indicateur $indicateur)
     {
         $this->authorize('voir', $indicateur);
+        $user = auth()->user();
 
         $indicateur->load(['direction', 'responsable', 'valeurs' => fn($q) => $q->orderBy('annee')->orderBy('mois')->orderBy('trimestre')]);
 
@@ -67,16 +82,57 @@ class IndicateurController extends Controller
             'taux'    => $v->taux_realisation,
         ])->values()->toArray();
 
-        return view('indicateurs.show', compact('indicateur', 'valeursCourbes'));
+        return view('indicateurs.show', [
+            'indicateur' => $indicateur,
+            'valeursCourbes' => $valeursCourbes,
+            'scopeLabel' => $user->scopeLabel(),
+        ]);
+    }
+
+    public function print(Indicateur $indicateur)
+    {
+        $this->authorize('voir', $indicateur);
+        $user = auth()->user();
+
+        $indicateur->load([
+            'direction',
+            'responsable',
+            'valeurs' => fn ($q) => $q
+                ->with(['saisiPar', 'validePar'])
+                ->orderByDesc('annee')
+                ->orderByDesc('trimestre')
+                ->orderByDesc('mois'),
+        ]);
+
+        return view('indicateurs.print', [
+            'indicateur' => $indicateur,
+            'scopeLabel' => $user->scopeLabel(),
+            'printedAt' => now(),
+        ]);
     }
 
     public function edit(Indicateur $indicateur)
     {
         $this->authorize('modifier', $indicateur);
-        $directions = Direction::actif()->orderBy('libelle')->get();
-        $users      = User::actif()->orderBy('name')->get();
+        $user = request()->user();
+        $resolver = app(UserScopeResolver::class);
+        $directions = $resolver
+            ->applyToQuery(Direction::actif()->orderBy('libelle'), $user, [
+                'departement' => 'departement_id',
+                'direction' => 'id',
+                'service' => null,
+            ])
+            ->get();
+        $users = $resolver
+            ->applyToQuery(User::actif()->orderBy('name'), $user, [
+                'departement' => 'departement_id',
+                'direction' => 'direction_id',
+                'service' => 'service_id',
+            ])
+            ->get();
+        $scopeLabel = $user->scopeLabel();
 
-        return view('indicateurs.edit', compact('indicateur', 'directions', 'users'));
+        return view('indicateurs.edit', compact('indicateur', 'directions', 'users', 'scopeLabel'));
     }
 
     public function update(Request $request, Indicateur $indicateur)
@@ -88,11 +144,39 @@ class IndicateurController extends Controller
             'definition'            => 'nullable|string',
             'unite_mesure'          => 'nullable|string|max:50',
             'valeur_cible_annuelle' => 'nullable|numeric',
+            'responsable_id'        => 'nullable|exists:users,id',
+            'direction_id'          => 'nullable|exists:directions,id',
             'seuil_alerte_rouge'    => 'nullable|numeric|min:0|max:100',
             'seuil_alerte_orange'   => 'nullable|numeric|min:0|max:100',
             'seuil_alerte_vert'     => 'nullable|numeric|min:0|max:100',
             'notes'                 => 'nullable|string',
         ]);
+
+        $resolver = app(UserScopeResolver::class);
+        $currentUser = $request->user();
+
+        if (! empty($data['direction_id'])) {
+            $direction = Direction::find($data['direction_id']);
+
+            abort_unless(
+                $direction && $resolver->canAccessAttributes($currentUser, departementId: $direction->departement_id, directionId: $direction->id),
+                403
+            );
+        }
+
+        if (! empty($data['responsable_id'])) {
+            $responsable = User::find($data['responsable_id']);
+
+            abort_unless(
+                $responsable && $resolver->canAccessAttributes(
+                    $currentUser,
+                    departementId: $responsable->departement_id ?? $responsable->direction?->departement_id,
+                    directionId: $responsable->direction_id,
+                    serviceId: $responsable->service_id,
+                ),
+                403
+            );
+        }
 
         $indicateur->update($data);
 

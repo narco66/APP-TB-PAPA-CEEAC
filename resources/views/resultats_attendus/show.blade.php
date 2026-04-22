@@ -1,6 +1,6 @@
 @extends('layouts.app')
 @section('title', $ra->code)
-@section('page-title', $ra->code . ' — ' . Str::limit($ra->libelle, 60))
+@section('page-title', $ra->code . ' - ' . Str::limit($ra->libelle, 60))
 
 @section('breadcrumbs')
     <li><i class="fas fa-chevron-right mx-2 text-xs"></i></li>
@@ -11,6 +11,10 @@
 
 @section('content')
 <div class="space-y-6" x-data="{ onglet: 'activites' }">
+
+    <div class="rounded-xl border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm text-indigo-800">
+        <span class="font-semibold">Périmètre de données :</span> {{ $scopeLabel }}
+    </div>
 
     <!-- En-tête -->
     <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
@@ -70,8 +74,13 @@
         </div>
         @endif
 
-        @if($ra->objectifImmediats?->actionPrioritaire?->estEditable())
         <div class="mt-4 flex flex-wrap gap-2">
+            <a href="{{ route('resultats-attendus.print', $ra) }}"
+               target="_blank"
+               class="px-4 py-2 bg-white text-gray-700 rounded-lg text-sm border border-gray-200 hover:bg-gray-50 transition">
+                <i class="fas fa-print mr-1"></i>Version imprimable
+            </a>
+        @if($ra->objectifImmediats?->actionPrioritaire?->estEditable())
             @can('papa.modifier')
             <a href="{{ route('resultats-attendus.edit', $ra) }}"
                class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200 transition">
@@ -88,8 +97,8 @@
                 <i class="fas fa-paperclip mr-1"></i>Joindre une preuve
             </a>
             @endcan
-        </div>
         @endif
+        </div>
     </div>
 
     <!-- Onglets -->
@@ -119,7 +128,7 @@
                 <p class="font-medium text-sm text-gray-800 truncate">{{ $act->libelle }}</p>
                 <p class="text-xs text-gray-400">
                     {{ $act->direction?->sigle }} •
-                    Fin prévue : {{ $act->date_fin_prevue?->format('d/m/Y') ?? '—' }}
+                    Fin prévue : {{ $act->date_fin_prevue?->format('d/m/Y') ?? '-' }}
                 </p>
             </div>
             <div class="flex items-center gap-4 ml-4">

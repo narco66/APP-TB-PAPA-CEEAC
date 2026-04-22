@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\AppliesVisibilityScope;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -11,6 +13,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class Indicateur extends Model
 {
+    use HasFactory;
+    use AppliesVisibilityScope;
     use SoftDeletes, LogsActivity;
 
     protected $table = 'indicateurs';
@@ -45,8 +49,6 @@ class Indicateur extends Model
             ->logOnlyDirty()
             ->setDescriptionForEvent(fn(string $eventName) => "Indicateur {$this->code} : {$eventName}");
     }
-
-    // ─── Relations ──────────────────────────────────────────────
 
     public function resultatAttendu(): BelongsTo
     {
@@ -83,8 +85,6 @@ class Indicateur extends Model
         return $this->hasOne(ValeurIndicateur::class)->latestOfMany('created_at');
     }
 
-    // ─── Scopes ─────────────────────────────────────────────────
-
     public function scopeActif($query)
     {
         return $query->where('actif', true);
@@ -94,8 +94,6 @@ class Indicateur extends Model
     {
         return $query->where('type_indicateur', 'quantitatif');
     }
-
-    // ─── Helpers métier ─────────────────────────────────────────
 
     public function niveauAlerte(): string
     {
@@ -132,5 +130,14 @@ class Indicateur extends Model
             'baisse' => '↓',
             default  => '–',
         };
+    }
+
+    protected function visibilityScopeColumns(): array
+    {
+        return [
+            'departement' => null,
+            'direction' => 'direction_id',
+            'service' => null,
+        ];
     }
 }

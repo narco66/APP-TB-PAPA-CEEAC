@@ -1,6 +1,6 @@
 @extends('layouts.app')
-@section('title', 'Modifier — ' . $ra->code)
-@section('page-title', 'Modifier le résultat attendu')
+@section('title', 'Modifier â€” ' . $ra->code)
+@section('page-title', 'Modifier le rÃ©sultat attendu')
 
 @section('breadcrumbs')
     <li><i class="fas fa-chevron-right mx-2 text-xs"></i></li>
@@ -23,7 +23,7 @@
             @method('PUT')
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Libellé <span class="text-red-500">*</span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">LibellÃ© <span class="text-red-500">*</span></label>
                 <input type="text" name="libelle" value="{{ old('libelle', $ra->libelle) }}"
                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 @error('libelle') border-red-500 @enderror">
                 @error('libelle')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
@@ -46,7 +46,7 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Année de référence</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">AnnÃ©e de rÃ©fÃ©rence</label>
                     <input type="number" name="annee_reference" value="{{ old('annee_reference', $ra->annee_reference) }}"
                            min="2020" max="2040" placeholder="ex: 2025"
                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500">
@@ -56,7 +56,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Statut <span class="text-red-500">*</span></label>
                     <select name="statut"
                             class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500">
-                        @foreach(['planifie' => 'Planifié', 'en_cours' => 'En cours', 'atteint' => 'Atteint', 'partiellement_atteint' => 'Part. atteint', 'non_atteint' => 'Non atteint'] as $v => $l)
+                        @foreach(['planifie' => 'PlanifiÃ©', 'en_cours' => 'En cours', 'atteint' => 'Atteint', 'partiellement_atteint' => 'Part. atteint', 'non_atteint' => 'Non atteint'] as $v => $l)
                         <option value="{{ $v }}" {{ old('statut', $ra->statut) === $v ? 'selected' : '' }}>{{ $l }}</option>
                         @endforeach
                     </select>
@@ -65,7 +65,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Responsable</label>
                     <select name="responsable_id"
                             class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500">
-                        <option value="">-- Non assigné --</option>
+                        <option value="">-- Non assignÃ© --</option>
                         @foreach($users as $u)
                         <option value="{{ $u->id }}"
                                 {{ old('responsable_id', $ra->responsable_id) == $u->id ? 'selected' : '' }}>
@@ -91,7 +91,7 @@
                 <div x-show="preuveRequise" class="mt-3">
                     <input type="text" name="type_preuve_attendue"
                            value="{{ old('type_preuve_attendue', $ra->type_preuve_attendue) }}"
-                           placeholder="Ex : Procès-verbal signé, rapport..."
+                           placeholder="Ex : ProcÃ¨s-verbal signÃ©, rapport..."
                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500">
                 </div>
             </div>

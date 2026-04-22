@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Route;
@@ -80,6 +81,28 @@ class Decision extends Model
     public function attachments(): HasMany
     {
         return $this->hasMany(DecisionAttachment::class);
+    }
+
+    public function scopeVisibleTo(Builder $query, User $user): Builder
+    {
+        if ($user->resolveVisibilityScope()->isGlobal) {
+            return $query;
+        }
+
+        return $query->where(function (Builder $decisionQuery) use ($user) {
+            $decisionQuery
+                ->whereHas('papa', fn (Builder $papaQuery) => $papaQuery->visibleTo($user))
+                ->orWhereHas('actionPrioritaire', fn (Builder $actionQuery) => $actionQuery->visibleTo($user))
+                ->orWhereHas('activite', fn (Builder $activiteQuery) => $activiteQuery->visibleTo($user))
+                ->orWhereHas('budgetPapa', fn (Builder $budgetQuery) => $budgetQuery->visibleTo($user))
+                ->orWhere('prise_par', $user->id)
+                ->orWhere('validee_par', $user->id);
+        });
+    }
+
+    public function canBeAccessedBy(User $user): bool
+    {
+        return static::query()->whereKey($this->id)->visibleTo($user)->exists();
     }
 
     public function auditTrailParams(): array

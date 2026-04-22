@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\AppliesVisibilityScope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,6 +16,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 class ActionPrioritaire extends Model
 {
     use HasFactory;
+    use AppliesVisibilityScope;
     use SoftDeletes, LogsActivity;
 
     protected $table = 'actions_prioritaires';
@@ -119,5 +122,19 @@ class ActionPrioritaire extends Model
     public function estEditable(): bool
     {
         return $this->papa && $this->papa->estEditable();
+    }
+
+    public function canBeAccessedBy(User $user): bool
+    {
+        return static::query()->whereKey($this->id)->visibleTo($user)->exists();
+    }
+
+    protected function visibilityScopeColumns(): array
+    {
+        return [
+            'departement' => 'departement_id',
+            'direction' => null,
+            'service' => null,
+        ];
     }
 }

@@ -4,8 +4,10 @@ namespace Tests\Feature;
 
 use App\Models\NotificationApp;
 use App\Models\Decision;
+use App\Models\Departement;
 use App\Models\NotificationRule;
 use App\Models\Papa;
+use App\Models\ActionPrioritaire;
 use App\Models\User;
 use App\Models\WorkflowDefinition;
 use App\Models\WorkflowInstance;
@@ -19,6 +21,7 @@ class NotificationFeatureTest extends TestCase
 
     private User $initiateur;
     private User $sg;
+    private Departement $departement;
 
     protected function setUp(): void
     {
@@ -33,7 +36,13 @@ class NotificationFeatureTest extends TestCase
             'workflow.approuver',
         ]);
 
-        $this->initiateur = User::factory()->create(['actif' => true]);
+        $this->departement = Departement::factory()->create();
+
+        $this->initiateur = User::factory()->create([
+            'actif' => true,
+            'departement_id' => $this->departement->id,
+            'scope_level' => 'departement',
+        ]);
         $this->initiateur->assignRole($roleInitiateur);
 
         $this->sg = User::factory()->create(['actif' => true]);
@@ -73,6 +82,10 @@ class NotificationFeatureTest extends TestCase
         ]);
 
         $papa = Papa::factory()->create();
+        ActionPrioritaire::factory()->create([
+            'papa_id' => $papa->id,
+            'departement_id' => $this->departement->id,
+        ]);
 
         $this->actingAs($this->initiateur)
             ->post(route('workflows.demarrer-papa', $papa), ['workflow_code' => 'WF_TEST'])

@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Services\Security\UserScopeResolver;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -10,6 +13,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class BudgetPapa extends Model
 {
+    use HasFactory;
     use LogsActivity;
 
     protected $table = 'budgets_papa';
@@ -69,6 +73,26 @@ class BudgetPapa extends Model
     public function engagements(): HasMany
     {
         return $this->hasMany(EngagementFinancier::class, 'budget_papa_id');
+    }
+
+    public function scopeVisibleTo(Builder $query, User $user): Builder
+    {
+        $scope = app(UserScopeResolver::class)->resolve($user);
+
+        if ($scope->isGlobal) {
+            return $query;
+        }
+
+        return $query->where(function (Builder $budgetQuery) use ($user) {
+            $budgetQuery
+                ->whereHas('actionPrioritaire', fn (Builder $actionQuery) => $actionQuery->visibleTo($user))
+                ->orWhereHas('activite', fn (Builder $activiteQuery) => $activiteQuery->visibleTo($user));
+        });
+    }
+
+    public function canBeAccessedBy(User $user): bool
+    {
+        return static::query()->whereKey($this->id)->visibleTo($user)->exists();
     }
 
     // ─── Helpers ────────────────────────────────────────────────

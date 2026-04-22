@@ -1,10 +1,10 @@
 @extends('layouts.app')
-@section('title', 'Nouveau résultat attendu')
-@section('page-title', 'Créer un résultat attendu')
+@section('title', 'Nouveau rÃ©sultat attendu')
+@section('page-title', 'CrÃ©er un rÃ©sultat attendu')
 
 @section('breadcrumbs')
     <li><i class="fas fa-chevron-right mx-2 text-xs"></i></li>
-    <li><a href="{{ route('resultats-attendus.index') }}" class="hover:text-indigo-600">Résultats attendus</a></li>
+    <li><a href="{{ route('resultats-attendus.index') }}" class="hover:text-indigo-600">RÃ©sultats attendus</a></li>
     @if($oi)
     <li><i class="fas fa-chevron-right mx-2 text-xs"></i></li>
     <li><a href="{{ route('objectifs-immediats.show', $oi) }}" class="hover:text-indigo-600">{{ $oi->code }}</a></li>
@@ -15,12 +15,15 @@
 
 @section('content')
 <div class="max-w-3xl" x-data="raForm()" x-init="init()">
+    <div class="mb-4 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-800">
+        <span class="font-semibold">Perimetre de donnees :</span> {{ $scopeLabel }}
+    </div>
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
 
         <form action="{{ route('resultats-attendus.store') }}" method="POST" class="space-y-5">
             @csrf
 
-            {{-- Sélection PAPA + OI (affiché si pas de contexte pré-défini) --}}
+            {{-- SÃ©lection PAPA + OI (affichÃ© si pas de contexte prÃ©-dÃ©fini) --}}
             @if(!$oi)
             <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-4">
                 <p class="text-xs font-semibold text-amber-700 uppercase tracking-wide">
@@ -33,10 +36,10 @@
                     </label>
                     <select x-model="papaId" @change="loadOIs()"
                             class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500">
-                        <option value="">-- Sélectionner un PAPA --</option>
+                        <option value="">-- SÃ©lectionner un PAPA --</option>
                         @foreach($papas as $p)
                         <option value="{{ $p->id }}" {{ old('papa_id') == $p->id ? 'selected' : '' }}>
-                            {{ $p->code }} — {{ Str::limit($p->libelle, 60) }}
+                            {{ $p->code }} â€” {{ Str::limit($p->libelle, 60) }}
                         </option>
                         @endforeach
                     </select>
@@ -44,14 +47,14 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">
-                        Objectif immédiat <span class="text-red-500">*</span>
+                        Objectif immÃ©diat <span class="text-red-500">*</span>
                     </label>
                     <select name="objectif_immediat_id" x-model="oiId"
                             :disabled="!papaId"
                             class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 @error('objectif_immediat_id') border-red-500 @enderror">
                         <option value="">-- Choisir d'abord un PAPA --</option>
                         <template x-for="oi in ois" :key="oi.id">
-                            <option :value="oi.id" x-text="oi.code + ' — ' + oi.libelle.substring(0, 60)"></option>
+                            <option :value="oi.id" x-text="oi.code + ' â€” ' + oi.libelle.substring(0, 60)"></option>
                         </template>
                     </select>
                     @error('objectif_immediat_id')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
@@ -61,10 +64,10 @@
             <input type="hidden" name="objectif_immediat_id" value="{{ $oi->id }}">
             {{-- Contexte OI --}}
             <div class="bg-indigo-50 rounded-lg p-3 border border-indigo-100">
-                <p class="text-xs text-indigo-600 font-medium mb-0.5">Objectif immédiat parent</p>
-                <p class="font-semibold text-indigo-900">{{ $oi->code }} — {{ Str::limit($oi->libelle, 100) }}</p>
+                <p class="text-xs text-indigo-600 font-medium mb-0.5">Objectif immÃ©diat parent</p>
+                <p class="font-semibold text-indigo-900">{{ $oi->code }} â€” {{ Str::limit($oi->libelle, 100) }}</p>
                 <p class="text-xs text-indigo-500 mt-0.5">
-                    {{ $oi->actionPrioritaire?->code }} → {{ $oi->actionPrioritaire?->papa?->code }}
+                    {{ $oi->actionPrioritaire?->code }} â†’ {{ $oi->actionPrioritaire?->papa?->code }}
                 </p>
             </div>
             @endif
@@ -88,10 +91,10 @@
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">
-                    Libellé <span class="text-red-500">*</span>
+                    LibellÃ© <span class="text-red-500">*</span>
                 </label>
                 <input type="text" name="libelle" value="{{ old('libelle') }}"
-                       placeholder="Intitulé du résultat attendu"
+                       placeholder="IntitulÃ© du rÃ©sultat attendu"
                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 @error('libelle') border-red-500 @enderror">
                 @error('libelle')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
             </div>
@@ -105,10 +108,10 @@
             <div class="grid grid-cols-2 gap-5">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Type de résultat <span class="text-red-500">*</span>
+                        Type de rÃ©sultat <span class="text-red-500">*</span>
                     </label>
                     <div class="space-y-2">
-                        @foreach(['output' => ['label' => 'Extrant (Output)', 'desc' => 'Produit direct de l\'activité'], 'outcome' => ['label' => 'Effet (Outcome)', 'desc' => 'Changement attendu à moyen terme'], 'impact' => ['label' => 'Impact', 'desc' => 'Changement structurel à long terme']] as $v => $opt)
+                        @foreach(['output' => ['label' => 'Extrant (Output)', 'desc' => 'Produit direct de l\'activitÃ©'], 'outcome' => ['label' => 'Effet (Outcome)', 'desc' => 'Changement attendu Ã  moyen terme'], 'impact' => ['label' => 'Impact', 'desc' => 'Changement structurel Ã  long terme']] as $v => $opt)
                         <label class="flex items-start space-x-3 p-2 rounded-lg border cursor-pointer hover:bg-gray-50 transition
                             {{ old('type_resultat', 'output') === $v ? 'border-indigo-400 bg-indigo-50' : 'border-gray-200' }}">
                             <input type="radio" name="type_resultat" value="{{ $v }}"
@@ -125,7 +128,7 @@
                 </div>
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Année de référence</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">AnnÃ©e de rÃ©fÃ©rence</label>
                         <input type="number" name="annee_reference" value="{{ old('annee_reference') }}"
                                min="2020" max="2040" placeholder="ex: 2025"
                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500">
@@ -135,7 +138,7 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">Responsable</label>
                         <select name="responsable_id"
                                 class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500">
-                            <option value="">-- Non assigné --</option>
+                            <option value="">-- Non assignÃ© --</option>
                             @foreach($users as $u)
                             <option value="{{ $u->id }}" {{ old('responsable_id') == $u->id ? 'selected' : '' }}>
                                 {{ $u->prenom }} {{ $u->name }}
@@ -158,13 +161,13 @@
                         <p class="text-sm font-medium text-gray-700">
                             <i class="fas fa-paperclip text-orange-500 mr-1"></i>Preuve documentaire requise
                         </p>
-                        <p class="text-xs text-gray-400">Un document justificatif devra être joint à ce résultat</p>
+                        <p class="text-xs text-gray-400">Un document justificatif devra Ãªtre joint Ã  ce rÃ©sultat</p>
                     </div>
                 </label>
                 <div x-show="preuveRequise" class="mt-3">
                     <label class="block text-xs font-medium text-gray-600 mb-1">Type de preuve attendue</label>
                     <input type="text" name="type_preuve_attendue" value="{{ old('type_preuve_attendue') }}"
-                           placeholder="Ex : Procès-verbal signé, rapport d'activité, photos..."
+                           placeholder="Ex : ProcÃ¨s-verbal signÃ©, rapport d'activitÃ©, photos..."
                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500">
                 </div>
             </div>
@@ -180,7 +183,7 @@
                    class="px-5 py-2 text-sm text-gray-600 hover:text-gray-800">Annuler</a>
                 <button type="submit"
                         class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition">
-                    <i class="fas fa-save mr-1"></i>Créer le résultat attendu
+                    <i class="fas fa-save mr-1"></i>CrÃ©er le rÃ©sultat attendu
                 </button>
             </div>
         </form>

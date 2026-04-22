@@ -16,6 +16,10 @@
         </a>
     </div>
 
+    <div class="mb-4 rounded-lg border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm text-indigo-800">
+        <i class="fas fa-shield-halved mr-2"></i>{{ $scopeLabel }}
+    </div>
+
     {{-- Sous-navigation --}}
     <div class="flex gap-2 mb-6 border-b border-gray-200">
         <a href="{{ route('admin.structure.departements') }}"

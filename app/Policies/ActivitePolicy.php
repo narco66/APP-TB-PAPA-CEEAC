@@ -4,23 +4,22 @@ namespace App\Policies;
 
 use App\Models\Activite;
 use App\Models\User;
+use App\Services\Security\UserScopeResolver;
 
 class ActivitePolicy
 {
-    /**
-     * Voir une activité.
-     * Une Direction ne peut voir que ses propres activités,
-     * sauf si l'utilisateur a le droit de voir toutes les directions.
-     */
     public function voir(User $user, Activite $activite): bool
     {
-        if (!$user->can('activite.voir')) return false;
+        if (! $user->can('activite.voir')) {
+            return false;
+        }
 
-        // Vision transversale (Président, VP, SG, Auditeur, Commissaire, etc.)
-        if ($user->can('activite.voir_toutes_directions')) return true;
-
-        // Restriction périmètre direction
-        return $user->direction_id === $activite->direction_id;
+        return app(UserScopeResolver::class)->canAccessAttributes(
+            $user,
+            departementId: $activite->direction?->departement_id,
+            directionId: $activite->direction_id,
+            serviceId: $activite->service_id,
+        );
     }
 
     public function creer(User $user): bool
@@ -30,38 +29,47 @@ class ActivitePolicy
 
     public function modifier(User $user, Activite $activite): bool
     {
-        if (!$user->can('activite.modifier')) return false;
-
-        // Vérification périmètre direction si pas vision transversale
-        if (!$user->can('activite.voir_toutes_directions')) {
-            return $user->direction_id === $activite->direction_id;
+        if (! $user->can('activite.modifier')) {
+            return false;
         }
 
-        // L'activité d'un PAPA verrouillé n'est pas modifiable
         if ($activite->resultatAttendu?->objectifImmediats?->actionPrioritaire?->papa?->estVerrouille()) {
             return false;
         }
 
-        return true;
+        return app(UserScopeResolver::class)->canAccessAttributes(
+            $user,
+            departementId: $activite->direction?->departement_id,
+            directionId: $activite->direction_id,
+            serviceId: $activite->service_id,
+        );
     }
 
     public function mettreAJourAvancement(User $user, Activite $activite): bool
     {
-        if (!$user->can('activite.mettre_a_jour_avancement')) return false;
-
-        if (!$user->can('activite.voir_toutes_directions')) {
-            return $user->direction_id === $activite->direction_id;
+        if (! $user->can('activite.mettre_a_jour_avancement')) {
+            return false;
         }
 
-        return true;
+        return app(UserScopeResolver::class)->canAccessAttributes(
+            $user,
+            departementId: $activite->direction?->departement_id,
+            directionId: $activite->direction_id,
+            serviceId: $activite->service_id,
+        );
     }
 
     public function supprimer(User $user, Activite $activite): bool
     {
-        if (!$user->can('activite.supprimer')) return false;
-        if (!$user->can('activite.voir_toutes_directions')) {
-            return $user->direction_id === $activite->direction_id;
+        if (! $user->can('activite.supprimer')) {
+            return false;
         }
-        return true;
+
+        return app(UserScopeResolver::class)->canAccessAttributes(
+            $user,
+            departementId: $activite->direction?->departement_id,
+            directionId: $activite->direction_id,
+            serviceId: $activite->service_id,
+        );
     }
 }

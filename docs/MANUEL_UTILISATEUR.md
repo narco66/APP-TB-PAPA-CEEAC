@@ -1,4 +1,4 @@
-﻿# Manuel Utilisateur
+# Manuel Utilisateur
 
 ## APP-TB-PAPA-CEEAC
 

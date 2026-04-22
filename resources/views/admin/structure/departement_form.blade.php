@@ -16,6 +16,10 @@
         </nav>
     </div>
 
+    <div class="mb-4 rounded-lg border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm text-indigo-800">
+        <i class="fas fa-shield-halved mr-2"></i>{{ $scopeLabel }}
+    </div>
+
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <form method="POST"
               action="{{ $departement ? route('admin.structure.departements.update', $departement) : route('admin.structure.departements.store') }}">

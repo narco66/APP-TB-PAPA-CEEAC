@@ -46,9 +46,14 @@ class ValeurIndicateur extends Model
         return $this->belongsTo(Indicateur::class);
     }
 
-    public function saisePar(): BelongsTo
+    public function saisiPar(): BelongsTo
     {
         return $this->belongsTo(User::class, 'saisi_par');
+    }
+
+    public function saisePar(): BelongsTo
+    {
+        return $this->saisiPar();
     }
 
     public function validePar(): BelongsTo

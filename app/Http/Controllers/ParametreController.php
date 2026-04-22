@@ -15,37 +15,46 @@ class ParametreController extends Controller
         private AuditService $auditService,
     ) {}
 
-    public function hub()
+    public function hub(Request $request)
     {
         $this->authorize('parametres.generaux.voir');
-        $stats = $this->parametreService->hubStats();
-        return view('parametres.hub', compact('stats'));
+
+        $stats = $this->parametreService->hubStats($request->user());
+        $scopeLabel = $this->scopeLabel($request);
+
+        return view('parametres.hub', compact('stats', 'scopeLabel'));
     }
 
-    public function generaux()
+    public function generaux(Request $request)
     {
         $this->authorize('parametres.generaux.voir');
-        $parametres = Parametre::where('groupe', 'general')
+
+        $parametres = Parametre::query()
+            ->where('groupe', 'general')
             ->orderBy('cle')
             ->get()
             ->keyBy('cle');
-        return view('parametres.generaux', compact('parametres'));
+
+        $scopeLabel = $this->scopeLabel($request);
+
+        return view('parametres.generaux', compact('parametres', 'scopeLabel'));
     }
 
     public function saveGeneraux(Request $request)
     {
         $this->authorize('parametres.generaux.modifier');
+        $this->ensureGlobalScope($request);
 
         $data = $request->validate([
-            'app_nom'              => 'required|string|max:200',
-            'app_sigle'            => 'required|string|max:20',
-            'app_organisation'     => 'required|string|max:200',
-            'app_langue_defaut'    => 'required|in:fr,en',
-            'app_fuseau_horaire'   => 'required|timezone',
-            'app_devise'           => 'required|string|max:10',
-            'app_format_date'      => 'required|in:d/m/Y,Y-m-d,d-m-Y',
-            'app_annee_reference'  => 'required|integer|min:2020|max:2040',
-            'app_pied_page'        => 'nullable|string|max:500',
+            'app_nom' => 'required|string|max:200',
+            'app_sigle' => 'required|string|max:20',
+            'app_organisation' => 'required|string|max:200',
+            'app_langue_defaut' => 'required|in:fr,en',
+            'app_fuseau_horaire' => 'required|timezone',
+            'app_devise' => 'required|string|max:10',
+            'app_format_date' => 'required|in:d/m/Y,Y-m-d,d-m-Y',
+            'app_annee_reference' => 'required|integer|min:2020|max:2040',
+            'app_pied_page' => 'nullable|string|max:500',
             'app_couleur_primaire' => 'nullable|string|max:7|regex:/^#[0-9A-Fa-f]{6}$/',
         ]);
 
@@ -58,22 +67,23 @@ class ParametreController extends Controller
             auditable: $request->user(),
             acteur: $request->user(),
             action: 'modifier',
-            description: 'Modification des paramètres généraux',
+            description: 'Modification des parametres generaux',
             donneesAvant: $avant,
             donneesApres: $data,
         );
 
-        return back()->with('success', 'Paramètres généraux sauvegardés avec succès.');
+        return back()->with('success', 'Parametres generaux sauvegardes avec succes.');
     }
 
     public function toggleMaintenance(Request $request)
     {
         $this->authorize('parametres.technique.modifier');
+        $this->ensureGlobalScope($request);
 
         $actuel = (bool) $this->parametreService->get('app_maintenance', false);
-        $this->parametreService->set('app_maintenance', !$actuel ? 'true' : 'false', $request->user());
+        $this->parametreService->set('app_maintenance', ! $actuel ? 'true' : 'false', $request->user());
 
-        $etat = !$actuel ? 'activé' : 'désactivé';
+        $etat = ! $actuel ? 'active' : 'desactive';
 
         $this->auditService->enregistrer(
             module: 'parametres',
@@ -91,7 +101,8 @@ class ParametreController extends Controller
     {
         $this->authorize('parametres.journal.voir');
 
-        $query = AuditEvent::with('acteur')
+        $query = AuditEvent::query()
+            ->with('acteur')
             ->where('module', 'parametres')
             ->latest('created_at');
 
@@ -100,11 +111,24 @@ class ParametreController extends Controller
         }
 
         $events = $query->paginate(50);
-
-        $eventTypes = AuditEvent::where('module', 'parametres')
+        $eventTypes = AuditEvent::query()
+            ->where('module', 'parametres')
             ->distinct()
             ->pluck('event_type');
+        $scopeLabel = $this->scopeLabel($request);
 
-        return view('parametres.journal', compact('events', 'eventTypes'));
+        return view('parametres.journal', compact('events', 'eventTypes', 'scopeLabel'));
+    }
+
+    private function ensureGlobalScope(Request $request): void
+    {
+        abort_unless($request->user()->resolveVisibilityScope()->isGlobal, 403);
+    }
+
+    private function scopeLabel(Request $request): string
+    {
+        return $request->user()->resolveVisibilityScope()->isGlobal
+            ? 'Perimetre de donnees : Consolidation institutionnelle'
+            : $request->user()->scopeLabel();
     }
 }

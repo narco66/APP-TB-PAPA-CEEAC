@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'Décisions')
 
@@ -19,6 +19,10 @@
                 Nouvelle décision
             </a>
         @endcan
+    </div>
+
+    <div class="rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-800">
+        <span class="font-semibold">Périmètre de données :</span> {{ $scopeLabel }}
     </div>
 
     <div class="rounded-xl border border-gray-200 bg-white shadow-sm">

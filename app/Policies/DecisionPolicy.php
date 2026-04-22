@@ -14,7 +14,7 @@ class DecisionPolicy
 
     public function view(User $user, Decision $decision): bool
     {
-        return $user->can('decision.voir');
+        return $user->can('decision.voir') && $decision->canBeAccessedBy($user);
     }
 
     public function create(User $user): bool
@@ -28,7 +28,7 @@ class DecisionPolicy
             return false;
         }
 
-        return in_array($decision->statut, ['brouillon', 'soumise'], true);
+        return in_array($decision->statut, ['brouillon', 'soumise'], true) && $decision->canBeAccessedBy($user);
     }
 
     public function executer(User $user, Decision $decision): bool
@@ -37,11 +37,13 @@ class DecisionPolicy
             return false;
         }
 
-        return $decision->statut === 'validee';
+        return $decision->statut === 'validee' && $decision->canBeAccessedBy($user);
     }
 
     public function rattacherDocument(User $user, Decision $decision): bool
     {
-        return $user->can('decision.creer') && in_array($decision->statut, ['brouillon', 'soumise', 'validee'], true);
+        return $user->can('decision.creer')
+            && in_array($decision->statut, ['brouillon', 'soumise', 'validee'], true)
+            && $decision->canBeAccessedBy($user);
     }
 }

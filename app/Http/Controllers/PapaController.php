@@ -28,6 +28,24 @@ class PapaController extends Controller
         return view('papas.index', compact('papas'));
     }
 
+    public function print(Request $request)
+    {
+        $this->authorize('papa.voir');
+
+        $query = Papa::query()->orderByDesc('annee');
+
+        if (! $request->user()->can('papa.voir_archive')) {
+            $query->where('statut', '!=', 'archive');
+        }
+
+        $papas = $query->get();
+
+        return view('papas.print', [
+            'papas' => $papas,
+            'printedAt' => now(),
+        ]);
+    }
+
     public function create()
     {
         $this->authorize('papa.creer');
@@ -45,24 +63,82 @@ class PapaController extends Controller
             ->with('success', "PAPA {$papa->code} créé avec succès.");
     }
 
-    public function show(Papa $papa)
+    public function show(Request $request, Papa $papa)
     {
         $this->authorize('voir', $papa);
+        $user = $request->user();
 
         $papa->load([
-            'actionsPrioritaires.departement',
-            'actionsPrioritaires.objectifsImmediat.resultatsAttendus',
-            'budgets.partenaire',
-            'budgets.actionPrioritaire',
-            'risques',
+            'actionsPrioritaires' => fn ($query) => $query
+                ->visibleTo($user)
+                ->with([
+                    'departement',
+                    'objectifsImmediat' => fn ($objectifQuery) => $objectifQuery
+                        ->visibleTo($user)
+                        ->with([
+                            'resultatsAttendus' => fn ($resultatQuery) => $resultatQuery
+                                ->visibleTo($user)
+                                ->with([
+                                    'activites' => fn ($activiteQuery) => $activiteQuery->visibleTo($user),
+                                ]),
+                        ]),
+                ]),
+            'budgets' => fn ($query) => $query
+                ->visibleTo($user)
+                ->with(['partenaire', 'actionPrioritaire']),
+            'risques' => fn ($query) => $query->visibleTo($user),
             'creePar',
             'validePar',
-            'workflowInstances.definition',
-            'decisions.prisePar',
+            'workflowInstances' => fn ($query) => $query
+                ->visibleTo($user)
+                ->with('definition'),
+            'decisions' => fn ($query) => $query
+                ->visibleTo($user)
+                ->with('prisePar'),
             'validationsWorkflow.acteur',
         ]);
 
-        return view('papas.show', compact('papa'));
+        return view('papas.show', [
+            'papa' => $papa,
+            'scopeLabel' => $user->scopeLabel(),
+        ]);
+    }
+
+    public function printShow(Request $request, Papa $papa)
+    {
+        $this->authorize('voir', $papa);
+        $user = $request->user();
+
+        $papa->load([
+            'actionsPrioritaires' => fn ($query) => $query
+                ->visibleTo($user)
+                ->with([
+                    'departement',
+                    'objectifsImmediat' => fn ($objectifQuery) => $objectifQuery
+                        ->visibleTo($user)
+                        ->withCount('resultatsAttendus'),
+                ])
+                ->orderBy('ordre'),
+            'budgets' => fn ($query) => $query
+                ->visibleTo($user)
+                ->with(['partenaire', 'actionPrioritaire']),
+            'risques' => fn ($query) => $query->visibleTo($user),
+            'creePar',
+            'validePar',
+            'workflowInstances' => fn ($query) => $query
+                ->visibleTo($user)
+                ->with('definition'),
+            'decisions' => fn ($query) => $query
+                ->visibleTo($user)
+                ->with('prisePar'),
+            'validationsWorkflow.acteur',
+        ]);
+
+        return view('papas.print-show', [
+            'papa' => $papa,
+            'scopeLabel' => $user->scopeLabel(),
+            'printedAt' => now(),
+        ]);
     }
 
     public function audit(Papa $papa): RedirectResponse

@@ -7,12 +7,16 @@
 <div class="flex items-center justify-between mb-6">
     <div>
         <h1 class="text-2xl font-bold text-gray-900">Utilisateurs</h1>
-        <p class="text-sm text-gray-500 mt-1">Gestion des comptes et des rôles</p>
+        <p class="text-sm text-gray-500 mt-1">Gestion des comptes et des rÃƒÂ´les</p>
     </div>
     <a href="{{ route('admin.utilisateurs.create') }}"
        class="inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700">
         <i class="fas fa-plus"></i> Nouvel utilisateur
     </a>
+</div>
+
+<div class="mb-4 rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-800">
+    <span class="font-semibold">Perimetre de donnees :</span> {{ $scopeLabel }}
 </div>
 
 @if(session('success'))
@@ -27,13 +31,13 @@
         <div>
             <label class="block text-xs font-medium text-gray-600 mb-1">Recherche</label>
             <input type="text" name="search" value="{{ request('search') }}"
-                   placeholder="Nom, prénom, email, matricule..."
+                   placeholder="Nom, prÃƒÂ©nom, email, matricule..."
                    class="border border-gray-300 rounded-lg text-sm px-3 py-2 w-64 focus:ring-indigo-500 focus:border-indigo-500">
         </div>
         <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1">Rôle</label>
+            <label class="block text-xs font-medium text-gray-600 mb-1">RÃƒÂ´le</label>
             <select name="role" class="border border-gray-300 rounded-lg text-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500">
-                <option value="">Tous les rôles</option>
+                <option value="">Tous les rÃƒÂ´les</option>
                 @foreach($roles as $role)
                 <option value="{{ $role->name }}" {{ request('role') === $role->name ? 'selected' : '' }}>
                     {{ ucfirst(str_replace('_', ' ', $role->name)) }}
@@ -46,7 +50,7 @@
             <select name="actif" class="border border-gray-300 rounded-lg text-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500">
                 <option value="">Tous</option>
                 <option value="1" {{ request('actif') === '1' ? 'selected' : '' }}>Actifs</option>
-                <option value="0" {{ request('actif') === '0' ? 'selected' : '' }}>Désactivés</option>
+                <option value="0" {{ request('actif') === '0' ? 'selected' : '' }}>DÃƒÂ©sactivÃƒÂ©s</option>
             </select>
         </div>
         <button type="submit" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium">
@@ -54,7 +58,7 @@
         </button>
         @if(request()->hasAny(['search','role','actif']))
         <a href="{{ route('admin.utilisateurs.index') }}" class="text-sm text-gray-500 hover:text-gray-700 py-2">
-            <i class="fas fa-times mr-1"></i> Réinitialiser
+            <i class="fas fa-times mr-1"></i> RÃƒÂ©initialiser
         </a>
         @endif
     </form>
@@ -65,7 +69,7 @@
     @if($users->isEmpty())
     <div class="text-center py-16 text-gray-400">
         <i class="fas fa-users text-4xl mb-3"></i>
-        <p>Aucun utilisateur trouvé.</p>
+        <p>Aucun utilisateur trouvÃƒÂ©.</p>
     </div>
     @else
     <table class="w-full text-sm">
@@ -75,7 +79,7 @@
                 <th class="text-left px-4 py-3">Email</th>
                 <th class="text-left px-4 py-3">Matricule</th>
                 <th class="text-left px-4 py-3">Direction</th>
-                <th class="text-left px-4 py-3">Rôle</th>
+                <th class="text-left px-4 py-3">RÃƒÂ´le</th>
                 <th class="text-center px-4 py-3">Statut</th>
                 <th class="text-left px-4 py-3">Connexion</th>
                 <th class="px-4 py-3"></th>
@@ -98,8 +102,8 @@
                     </div>
                 </td>
                 <td class="px-4 py-3 text-gray-600">{{ $user->email }}</td>
-                <td class="px-4 py-3 font-mono text-xs text-gray-500">{{ $user->matricule ?? '—' }}</td>
-                <td class="px-4 py-3 text-gray-600">{{ $user->direction?->code ?? '—' }}</td>
+                <td class="px-4 py-3 font-mono text-xs text-gray-500">{{ $user->matricule ?? 'Ã¢â‚¬â€' }}</td>
+                <td class="px-4 py-3 text-gray-600">{{ $user->direction?->code ?? 'Ã¢â‚¬â€' }}</td>
                 <td class="px-4 py-3">
                     @foreach($user->roles as $role)
                     <span class="inline-block bg-indigo-100 text-indigo-700 text-xs px-2 py-0.5 rounded font-medium">
@@ -109,11 +113,11 @@
                 </td>
                 <td class="px-4 py-3 text-center">
                     @if($user->trashed())
-                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-600">Archivé</span>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-600">ArchivÃƒÂ©</span>
                     @elseif($user->actif)
                     <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-700">Actif</span>
                     @else
-                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-red-100 text-red-700">Désactivé</span>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-red-100 text-red-700">DÃƒÂ©sactivÃƒÂ©</span>
                     @endif
                 </td>
                 <td class="px-4 py-3 text-xs text-gray-500">
@@ -134,7 +138,7 @@
                         <form method="POST" action="{{ route('admin.utilisateurs.toggle-actif', $user) }}">
                             @csrf
                             <button type="submit" class="text-gray-400 {{ $user->actif ? 'hover:text-amber-600' : 'hover:text-green-600' }}"
-                                    title="{{ $user->actif ? 'Désactiver' : 'Activer' }}">
+                                    title="{{ $user->actif ? 'DÃƒÂ©sactiver' : 'Activer' }}">
                                 <i class="fas {{ $user->actif ? 'fa-user-slash' : 'fa-user-check' }}"></i>
                             </button>
                         </form>

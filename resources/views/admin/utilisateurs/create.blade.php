@@ -13,6 +13,7 @@
     <div class="bg-white rounded-xl shadow-sm border border-gray-200">
         <div class="px-6 py-4 border-b border-gray-100">
             <h1 class="text-xl font-bold text-gray-900">Nouvel utilisateur</h1>
+            <p class="text-sm text-gray-500 mt-1">{{ $scopeLabel }}</p>
         </div>
 
         <form method="POST" action="{{ route('admin.utilisateurs.store') }}" class="p-6 space-y-5">
@@ -26,7 +27,7 @@
                     @error('name')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Prénom</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">PrÃƒÂ©nom</label>
                     <input type="text" name="prenom" value="{{ old('prenom') }}" maxlength="100"
                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
@@ -60,7 +61,7 @@
                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Téléphone</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">TÃƒÂ©lÃƒÂ©phone</label>
                     <input type="text" name="telephone" value="{{ old('telephone') }}" maxlength="30"
                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
@@ -84,18 +85,18 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Direction</label>
                     <select name="direction_id" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="">— Non assigné —</option>
+                        <option value="">Ã¢â‚¬â€ Non assignÃƒÂ© Ã¢â‚¬â€</option>
                         @foreach($directions as $dir)
                         <option value="{{ $dir->id }}" {{ old('direction_id') == $dir->id ? 'selected' : '' }}>
-                            {{ $dir->code }} — {{ $dir->libelle }}
+                            {{ $dir->code }} Ã¢â‚¬â€ {{ $dir->libelle }}
                         </option>
                         @endforeach
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Rôle <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">RÃƒÂ´le <span class="text-red-500">*</span></label>
                     <select name="role" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500 @error('role') border-red-500 @enderror">
-                        <option value="">— Choisir —</option>
+                        <option value="">Ã¢â‚¬â€ Choisir Ã¢â‚¬â€</option>
                         @foreach($roles as $role)
                         <option value="{{ $role->name }}" {{ old('role') === $role->name ? 'selected' : '' }}>
                             {{ ucfirst(str_replace('_', ' ', $role->name)) }}
@@ -116,7 +117,7 @@
                     <i class="fas fa-arrow-left mr-1"></i> Annuler
                 </a>
                 <button type="submit" class="inline-flex items-center gap-2 bg-indigo-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700">
-                    <i class="fas fa-save"></i> Créer le compte
+                    <i class="fas fa-save"></i> CrÃƒÂ©er le compte
                 </button>
             </div>
         </form>

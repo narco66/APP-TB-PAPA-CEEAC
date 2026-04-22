@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -91,6 +92,20 @@ class Papa extends Model
     public function auditEvents(): HasMany
     {
         return $this->hasMany(AuditEvent::class);
+    }
+
+    public function scopeVisibleTo(Builder $query, User $user): Builder
+    {
+        if ($user->resolveVisibilityScope()->isGlobal) {
+            return $query;
+        }
+
+        return $query->whereHas('actionsPrioritaires', fn (Builder $q) => $q->visibleTo($user));
+    }
+
+    public function canBeAccessedBy(User $user): bool
+    {
+        return static::query()->whereKey($this->id)->visibleTo($user)->exists();
     }
 
     public function cloneDePapa(): BelongsTo

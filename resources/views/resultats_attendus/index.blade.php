@@ -1,6 +1,6 @@
 @extends('layouts.app')
-@section('title', 'Résultats Attendus')
-@section('page-title', 'Résultats Attendus')
+@section('title', 'Résultats attendus')
+@section('page-title', 'Résultats attendus')
 
 @section('breadcrumbs')
     <li><i class="fas fa-chevron-right mx-2 text-xs"></i></li>
@@ -15,6 +15,10 @@
         <p class="text-sm text-gray-500">{{ $resultats->total() }} résultat(s) attendu(s)</p>
     </div>
 
+    <div class="rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-800">
+        <span class="font-semibold">Périmètre de données :</span> {{ $scopeLabel }}
+    </div>
+
     <!-- Filtres -->
     <form method="GET" class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex flex-wrap gap-3 items-end">
         <div>
@@ -24,7 +28,7 @@
                 <option value="">Tous les PAPA</option>
                 @foreach($papas as $p)
                 <option value="{{ $p->id }}" {{ request('papa_id') == $p->id ? 'selected' : '' }}>
-                    {{ $p->code }} — {{ Str::limit($p->libelle, 40) }}
+                    {{ $p->code }} - {{ Str::limit($p->libelle, 40) }}
                 </option>
                 @endforeach
             </select>
@@ -36,7 +40,7 @@
                 <option value="">Tous les OI</option>
                 @foreach($objectifs as $oi)
                 <option value="{{ $oi->id }}" {{ request('objectif_immediat_id') == $oi->id ? 'selected' : '' }}>
-                    {{ $oi->code }} — {{ Str::limit($oi->libelle, 40) }}
+                    {{ $oi->code }} - {{ Str::limit($oi->libelle, 40) }}
                 </option>
                 @endforeach
             </select>
@@ -86,11 +90,11 @@
         @forelse($resultats as $ra)
         @php
             $statutColors = [
-                'planifie'              => 'gray',
-                'en_cours'             => 'blue',
-                'atteint'              => 'green',
-                'partiellement_atteint'=> 'yellow',
-                'non_atteint'          => 'red',
+                'planifie' => 'gray',
+                'en_cours' => 'blue',
+                'atteint' => 'green',
+                'partiellement_atteint' => 'yellow',
+                'non_atteint' => 'red',
             ];
             $typeColors = ['output' => 'indigo', 'outcome' => 'purple', 'impact' => 'amber'];
             $color = $statutColors[$ra->statut] ?? 'gray';
@@ -110,8 +114,8 @@
                     </div>
                     <p class="font-semibold text-gray-800">{{ $ra->libelle }}</p>
                     <p class="text-xs text-gray-400 mt-0.5">
-                        OI : {{ $ra->objectifImmediats?->code ?? '—' }} •
-                        PAPA : {{ $ra->objectifImmediats?->actionPrioritaire?->papa?->code ?? '—' }}
+                        OI : {{ $ra->objectifImmediats?->code ?? '-' }} •
+                        PAPA : {{ $ra->objectifImmediats?->actionPrioritaire?->papa?->code ?? '-' }}
                         @if($ra->responsable)
                         • <i class="fas fa-user-circle mr-0.5"></i>{{ $ra->responsable->prenom }} {{ $ra->responsable->name }}
                         @endif

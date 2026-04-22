@@ -10,32 +10,37 @@ class ParametrePapaController extends Controller
 {
     public function __construct(private AuditService $auditService) {}
 
-    public function index()
+    public function index(Request $request)
     {
         $this->authorize('parametres.papa.voir');
 
-        $papas = Papa::withCount(['risques', 'rapports'])
+        $papas = Papa::query()
+            ->visibleTo($request->user())
+            ->withCount(['risques', 'rapports'])
             ->with('creePar', 'validePar')
             ->whereNotIn('statut', ['archive'])
             ->orderByDesc('annee')
             ->get();
 
-        return view('parametres.papa.index', compact('papas'));
+        $scopeLabel = $request->user()->scopeLabel();
+
+        return view('parametres.papa.index', compact('papas', 'scopeLabel'));
     }
 
     public function activer(Request $request, Papa $papa)
     {
         $this->authorize('parametres.papa.modifier');
+        $this->ensurePapaVisible($request, $papa);
 
         abort_if(
-            !in_array($papa->statut, ['valide', 'en_execution']),
+            ! in_array($papa->statut, ['valide', 'en_execution'], true),
             422,
-            'Seul un PAPA validé peut être défini comme actif.'
+            'Seul un PAPA valide peut etre defini comme actif.'
         );
 
-        $avant = Papa::where('statut', 'en_execution')->pluck('id')->toArray();
+        $avant = Papa::query()->where('statut', 'en_execution')->pluck('id')->toArray();
 
-        Papa::where('statut', 'en_execution')->update(['statut' => 'valide']);
+        Papa::query()->where('statut', 'en_execution')->update(['statut' => 'valide']);
         $papa->update(['statut' => 'en_execution']);
 
         $this->auditService->enregistrer(
@@ -44,19 +49,20 @@ class ParametrePapaController extends Controller
             auditable: $papa,
             acteur: $request->user(),
             action: 'modifier',
-            description: "PAPA actif changé vers {$papa->code} ({$papa->annee})",
+            description: "PAPA actif change vers {$papa->code} ({$papa->annee})",
             donneesAvant: ['papa_ids_actifs' => $avant],
             donneesApres: ['papa_id_actif' => $papa->id],
             papa: $papa,
         );
 
-        return back()->with('success', "PAPA {$papa->code} ({$papa->annee}) défini comme PAPA actif en exécution.");
+        return back()->with('success', "PAPA {$papa->code} ({$papa->annee}) defini comme PAPA actif.");
     }
 
     public function verrouiller(Request $request, Papa $papa)
     {
         $this->authorize('parametres.papa.modifier');
-        abort_if($papa->est_verrouille, 422, 'Ce PAPA est déjà verrouillé.');
+        $this->ensurePapaVisible($request, $papa);
+        abort_if($papa->est_verrouille, 422, 'Ce PAPA est deja verrouille.');
 
         $papa->update(['est_verrouille' => true]);
 
@@ -66,16 +72,17 @@ class ParametrePapaController extends Controller
             auditable: $papa,
             acteur: $request->user(),
             action: 'verrouiller',
-            description: "PAPA {$papa->code} verrouillé",
+            description: "PAPA {$papa->code} verrouille",
             papa: $papa,
         );
 
-        return back()->with('success', "PAPA {$papa->code} verrouillé. Il ne peut plus être modifié.");
+        return back()->with('success', "PAPA {$papa->code} verrouille.");
     }
 
     public function deverrouiller(Request $request, Papa $papa)
     {
         $this->authorize('parametres.papa.modifier');
+        $this->ensurePapaVisible($request, $papa);
 
         $papa->update(['est_verrouille' => false]);
 
@@ -85,35 +92,36 @@ class ParametrePapaController extends Controller
             auditable: $papa,
             acteur: $request->user(),
             action: 'modifier',
-            description: "PAPA {$papa->code} déverrouillé",
+            description: "PAPA {$papa->code} deverrouille",
             papa: $papa,
         );
 
-        return back()->with('success', "PAPA {$papa->code} déverrouillé.");
+        return back()->with('success', "PAPA {$papa->code} deverrouille.");
     }
 
     public function archiver(Request $request, Papa $papa)
     {
         $this->authorize('parametres.papa.archiver');
+        $this->ensurePapaVisible($request, $papa);
 
         $request->validate([
-            'motif'        => 'required|string|min:20|max:500',
+            'motif' => 'required|string|min:20|max:500',
             'confirmation' => 'required|in:ARCHIVER',
         ], [
             'confirmation.in' => 'Vous devez taper exactement "ARCHIVER" pour confirmer.',
         ]);
 
-        $peutArchiver = in_array($papa->statut, ['cloture', 'valide'])
+        $peutArchiver = in_array($papa->statut, ['cloture', 'valide'], true)
             || $request->user()->hasRole('super_admin');
 
-        abort_unless($peutArchiver, 422, 'Seul un PAPA clôturé peut être archivé (ou super admin).');
+        abort_unless($peutArchiver, 422, 'Seul un PAPA cloture peut etre archive, sauf super admin.');
 
         $papa->update([
-            'statut'          => 'archive',
-            'archived_by'     => $request->user()->id,
-            'archived_at'     => now(),
+            'statut' => 'archive',
+            'archived_by' => $request->user()->id,
+            'archived_at' => now(),
             'motif_archivage' => $request->motif,
-            'est_verrouille'  => true,
+            'est_verrouille' => true,
         ]);
 
         $this->auditService->enregistrer(
@@ -122,24 +130,36 @@ class ParametrePapaController extends Controller
             auditable: $papa,
             acteur: $request->user(),
             action: 'archiver',
-            description: "PAPA {$papa->code} archivé. Motif : {$request->motif}",
+            description: "PAPA {$papa->code} archive. Motif : {$request->motif}",
             papa: $papa,
         );
 
         return redirect()
             ->route('parametres.papa.index')
-            ->with('success', "PAPA {$papa->code} archivé avec succès.");
+            ->with('success', "PAPA {$papa->code} archive avec succes.");
     }
 
-    public function archives()
+    public function archives(Request $request)
     {
         $this->authorize('parametres.papa.voir');
 
-        $archives = Papa::where('statut', 'archive')
+        $archives = Papa::query()
+            ->visibleTo($request->user())
+            ->where('statut', 'archive')
             ->with('archivePar', 'creePar')
             ->orderByDesc('archived_at')
             ->paginate(20);
 
-        return view('parametres.papa.archives', compact('archives'));
+        $scopeLabel = $request->user()->scopeLabel();
+
+        return view('parametres.papa.archives', compact('archives', 'scopeLabel'));
+    }
+
+    private function ensurePapaVisible(Request $request, Papa $papa): void
+    {
+        abort_unless(
+            Papa::query()->visibleTo($request->user())->whereKey($papa->id)->exists(),
+            403
+        );
     }
 }

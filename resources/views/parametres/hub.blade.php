@@ -36,6 +36,10 @@
         </div>
     </div>
 
+    <div class="rounded-lg border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm text-indigo-800">
+        <i class="fas fa-shield-halved mr-2"></i>{{ $scopeLabel }}
+    </div>
+
     {{-- Bannière maintenance --}}
     @if($stats['maintenance'])
     <div class="bg-amber-50 border border-amber-300 rounded-xl p-4 flex items-center space-x-3">
@@ -44,6 +48,13 @@
             <p class="text-sm font-semibold text-amber-800">Mode maintenance actif</p>
             <p class="text-xs text-amber-700">L'application est actuellement en mode maintenance. Les utilisateurs non-administrateurs ne peuvent pas se connecter.</p>
         </div>
+    </div>
+    @endif
+
+    @if($stats['is_partial'])
+    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
+        <i class="fas fa-eye-slash mr-2"></i>
+        Certains agregats globaux sont masques hors perimetre institutionnel global.
     </div>
     @endif
 
@@ -56,7 +67,7 @@
                     <i class="fas fa-sliders text-indigo-500 text-sm"></i>
                 </div>
             </div>
-            <p class="text-2xl font-bold text-gray-800">{{ number_format($stats['total_parametres']) }}</p>
+            <p class="text-2xl font-bold text-gray-800">{{ is_null($stats['total_parametres']) ? '—' : number_format($stats['total_parametres']) }}</p>
             <p class="text-xs text-gray-500 mt-1">Paramètres configurés</p>
         </div>
 
@@ -67,8 +78,14 @@
                     <i class="fas fa-list-check text-green-500 text-sm"></i>
                 </div>
             </div>
-            <p class="text-2xl font-bold text-gray-800">{{ number_format($stats['referentiels_actifs']) }}</p>
-            <p class="text-xs text-gray-500 mt-1">Actifs sur {{ number_format($stats['referentiels']) }} total</p>
+            <p class="text-2xl font-bold text-gray-800">{{ is_null($stats['referentiels_actifs']) ? '—' : number_format($stats['referentiels_actifs']) }}</p>
+            <p class="text-xs text-gray-500 mt-1">
+                @if(is_null($stats['referentiels']))
+                    Agrégat global masqué
+                @else
+                    Actifs sur {{ number_format($stats['referentiels']) }} total
+                @endif
+            </p>
         </div>
 
         <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
@@ -89,7 +106,7 @@
                     <i class="fas fa-tag text-purple-500 text-sm"></i>
                 </div>
             </div>
-            <p class="text-2xl font-bold text-gray-800">{{ number_format($stats['libelles_modifies']) }}</p>
+            <p class="text-2xl font-bold text-gray-800">{{ is_null($stats['libelles_modifies']) ? '—' : number_format($stats['libelles_modifies']) }}</p>
             <p class="text-xs text-gray-500 mt-1">Libellés personnalisés</p>
         </div>
     </div>

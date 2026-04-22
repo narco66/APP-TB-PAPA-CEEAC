@@ -134,10 +134,11 @@ class RolesPermissionsSeeder extends Seeder
 
             // ── Administration ────────────────────────────────────────────
             'admin.utilisateurs',
+            'admin.importer',
             'admin.roles',
             'admin.structure',
             'admin.partenaires',
-            'admin.parametres',
+            'admin.parametres', 'admin.importer',
             'admin.audit_log',
             'admin.purger',
 
@@ -257,7 +258,7 @@ class RolesPermissionsSeeder extends Seeder
             'decision.voir', 'decision.creer', 'decision.valider', 'decision.executer',
             'audit_event.voir', 'notification_rule.gerer',
             'dashboard.sg',
-            'admin.utilisateurs', 'admin.structure', 'admin.partenaires',
+            'admin.utilisateurs', 'admin.importer', 'admin.structure', 'admin.partenaires',
         ]);
 
         // Directeur Technique — responsable opérationnel sectoriel

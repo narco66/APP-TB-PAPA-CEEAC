@@ -14,12 +14,18 @@
         <div>
             <p class="text-sm text-gray-500">{{ $papas->total() }} plan(s) au total</p>
         </div>
-        @can('papa.creer')
-            <a href="{{ route('papas.create') }}" class="flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
-                <i class="fas fa-plus"></i>
-                <span>Nouveau PAPA</span>
+        <div class="flex items-center gap-2">
+            <a href="{{ route('papas.print') }}" target="_blank" class="flex items-center space-x-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition">
+                <i class="fas fa-print"></i>
+                <span>Version imprimable</span>
             </a>
-        @endcan
+            @can('papa.creer')
+                <a href="{{ route('papas.create') }}" class="flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+                    <i class="fas fa-plus"></i>
+                    <span>Nouveau PAPA</span>
+                </a>
+            @endcan
+        </div>
     </div>
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -33,7 +39,7 @@
                                 {{ $papa->libelleStatut() }}
                             </span>
                             @if($papa->est_verrouille)
-                                <span class="text-gray-400 text-xs"><i class="fas fa-lock"></i> Verrouille</span>
+                                <span class="text-gray-400 text-xs"><i class="fas fa-lock"></i> Verrouillé</span>
                             @endif
                         </div>
                         <h3 class="font-semibold text-gray-800">{{ $papa->libelle }}</h3>
@@ -54,7 +60,7 @@
                             <p class="text-xs text-gray-400">Financier</p>
                         </div>
                         <a href="{{ route('papas.show', $papa) }}" class="text-indigo-600 hover:text-indigo-800 font-medium text-sm">
-                            Detail <i class="fas fa-arrow-right ml-1"></i>
+                            Détail <i class="fas fa-arrow-right ml-1"></i>
                         </a>
                     </div>
                 </div>
@@ -62,7 +68,7 @@
                 <div class="mt-3 grid grid-cols-2 gap-3">
                     <div>
                         <div class="flex items-center justify-between text-xs text-gray-400 mb-1">
-                            <span>Execution physique</span>
+                            <span>Exécution physique</span>
                             <span>{{ $papa->taux_execution_physique }}%</span>
                         </div>
                         <div class="h-1.5 bg-gray-100 rounded-full">
@@ -71,7 +77,7 @@
                     </div>
                     <div>
                         <div class="flex items-center justify-between text-xs text-gray-400 mb-1">
-                            <span>Execution financiere</span>
+                            <span>Exécution financière</span>
                             <span>{{ $papa->taux_execution_financiere }}%</span>
                         </div>
                         <div class="h-1.5 bg-gray-100 rounded-full">
@@ -83,9 +89,9 @@
         @empty
             <div class="p-12 text-center">
                 <i class="fas fa-book text-gray-200 text-5xl mb-4"></i>
-                <p class="text-gray-400">Aucun PAPA trouve.</p>
+                <p class="text-gray-400">Aucun PAPA trouvé.</p>
                 @can('papa.creer')
-                    <a href="{{ route('papas.create') }}" class="mt-4 inline-block text-indigo-600 hover:underline text-sm">Creer le premier PAPA</a>
+                    <a href="{{ route('papas.create') }}" class="mt-4 inline-block text-indigo-600 hover:underline text-sm">Créer le premier PAPA</a>
                 @endcan
             </div>
         @endforelse

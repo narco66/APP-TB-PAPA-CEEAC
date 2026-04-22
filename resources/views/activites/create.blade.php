@@ -21,6 +21,9 @@
             .then(data => this.services = data);
     }
 }">
+    <div class="mb-4 rounded-xl border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm text-indigo-800">
+        <span class="font-semibold">Perimetre de donnees :</span> {{ $scopeLabel }}
+    </div>
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
         <h2 class="text-lg font-bold text-gray-800 mb-6">Informations de l'activité</h2>
 

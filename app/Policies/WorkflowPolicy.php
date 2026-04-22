@@ -14,7 +14,7 @@ class WorkflowPolicy
 
     public function view(User $user, WorkflowInstance $instance): bool
     {
-        return $user->can('workflow.voir');
+        return $user->can('workflow.voir') && $instance->canBeAccessedBy($user);
     }
 
     public function approuver(User $user, WorkflowInstance $instance): bool
@@ -23,7 +23,9 @@ class WorkflowPolicy
             return false;
         }
 
-        return in_array($instance->statut, ['en_cours'], true) && $instance->etapeCourante !== null;
+        return in_array($instance->statut, ['en_cours'], true)
+            && $instance->etapeCourante !== null
+            && $instance->canBeAccessedBy($user);
     }
 
     public function rejeter(User $user, WorkflowInstance $instance): bool
@@ -32,12 +34,14 @@ class WorkflowPolicy
             return false;
         }
 
-        return in_array($instance->statut, ['en_cours'], true) && $instance->etapeCourante !== null;
+        return in_array($instance->statut, ['en_cours'], true)
+            && $instance->etapeCourante !== null
+            && $instance->canBeAccessedBy($user);
     }
 
     public function commenter(User $user, WorkflowInstance $instance): bool
     {
-        return $user->can('workflow.commenter');
+        return $user->can('workflow.commenter') && $instance->canBeAccessedBy($user);
     }
 
     public function demarrer(User $user): bool

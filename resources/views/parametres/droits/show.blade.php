@@ -20,6 +20,10 @@
     </div>
     @endif
 
+    <div class="mb-5 rounded-lg border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm text-indigo-800">
+        <i class="fas fa-shield-halved mr-2"></i>{{ $scopeLabel }}
+    </div>
+
     <div class="flex items-center justify-between mb-6">
         <div>
             <h1 class="text-xl font-bold text-gray-900">Rôle : <span class="text-indigo-600">{{ $role->name }}</span></h1>

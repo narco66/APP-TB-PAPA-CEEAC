@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Parametre;
 use App\Services\AuditService;
 use App\Services\ParametreService;
 use Illuminate\Http\Request;
@@ -14,36 +13,39 @@ class ConfigRbmController extends Controller
         private AuditService $auditService,
     ) {}
 
-    public function index()
+    public function index(Request $request)
     {
         $this->authorize('parametres.rbm.voir');
+
         $config = $this->parametreService->getGroupe('rbm');
-        return view('parametres.rbm.index', compact('config'));
+        $scopeLabel = $this->scopeLabel($request);
+
+        return view('parametres.rbm.index', compact('config', 'scopeLabel'));
     }
 
     public function save(Request $request)
     {
         $this->authorize('parametres.rbm.modifier');
+        $this->ensureGlobalScope($request);
 
         $data = $request->validate([
-            'rbm_seuil_atteint'     => 'required|integer|min:1|max:100',
-            'rbm_seuil_risque'      => 'required|integer|min:1|max:100',
+            'rbm_seuil_atteint' => 'required|integer|min:1|max:100',
+            'rbm_seuil_risque' => 'required|integer|min:1|max:100',
             'rbm_seuil_non_atteint' => 'required|integer|min:1|max:100',
-            'rbm_prefixe_ap'        => 'required|string|max:10',
-            'rbm_prefixe_oi'        => 'required|string|max:10',
-            'rbm_prefixe_ra'        => 'required|string|max:10',
+            'rbm_prefixe_ap' => 'required|string|max:10',
+            'rbm_prefixe_oi' => 'required|string|max:10',
+            'rbm_prefixe_ra' => 'required|string|max:10',
         ]);
 
-        // Validate ordering: non_atteint < risque < atteint
         abort_if(
             $data['rbm_seuil_non_atteint'] >= $data['rbm_seuil_risque'],
             422,
-            'Le seuil "non atteint" doit être inférieur au seuil "en risque".'
+            'Le seuil "non atteint" doit etre inferieur au seuil "en risque".'
         );
         abort_if(
             $data['rbm_seuil_risque'] >= $data['rbm_seuil_atteint'],
             422,
-            'Le seuil "en risque" doit être inférieur au seuil "atteint".'
+            'Le seuil "en risque" doit etre inferieur au seuil "atteint".'
         );
 
         $avant = $this->parametreService->getGroupe('rbm');
@@ -55,11 +57,23 @@ class ConfigRbmController extends Controller
             auditable: null,
             acteur: $request->user(),
             action: 'modifier',
-            description: 'Configuration RBM modifiée',
+            description: 'Configuration RBM modifiee',
             donneesAvant: $avant,
             donneesApres: $data,
         );
 
-        return back()->with('success', 'Configuration RBM sauvegardée.');
+        return back()->with('success', 'Configuration RBM sauvegardee.');
+    }
+
+    private function ensureGlobalScope(Request $request): void
+    {
+        abort_unless($request->user()->resolveVisibilityScope()->isGlobal, 403);
+    }
+
+    private function scopeLabel(Request $request): string
+    {
+        return $request->user()->resolveVisibilityScope()->isGlobal
+            ? 'Perimetre de donnees : Consolidation institutionnelle'
+            : $request->user()->scopeLabel();
     }
 }

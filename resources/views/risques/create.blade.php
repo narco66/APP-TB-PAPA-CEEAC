@@ -14,8 +14,8 @@
     get niveau() {
         const s = this.score;
         if (s >= 15) return {label:'Critique', cls:'text-red-700 bg-red-100'};
-        if (s >= 8)  return {label:'Élevé',    cls:'text-orange-700 bg-orange-100'};
-        if (s >= 3)  return {label:'Modéré',   cls:'text-yellow-700 bg-yellow-100'};
+        if (s >= 8)  return {label:'Ã‰levÃ©',    cls:'text-orange-700 bg-orange-100'};
+        if (s >= 3)  return {label:'ModÃ©rÃ©',   cls:'text-yellow-700 bg-yellow-100'};
         return {label:'Faible', cls:'text-green-700 bg-green-100'};
     }
 }">
@@ -28,10 +28,14 @@
         <span class="text-gray-900 font-medium">Nouveau risque</span>
     </nav>
 
+    <div class="rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-800 mb-4">
+        <span class="font-semibold">Perimetre de donnees :</span> {{ $scopeLabel }}
+    </div>
+
     <div class="bg-white rounded-xl shadow-sm border border-gray-200">
         <div class="px-6 py-4 border-b border-gray-100">
             <h1 class="text-xl font-bold text-gray-900">Nouveau risque</h1>
-            <p class="text-sm text-gray-500 mt-1">{{ $papa->code }} — {{ $papa->libelle }}</p>
+            <p class="text-sm text-gray-500 mt-1">{{ $papa->code }} â€” {{ $papa->libelle }}</p>
         </div>
 
         <form method="POST" action="{{ route('risques.store', $papa) }}" class="p-6 space-y-5">
@@ -46,9 +50,9 @@
                     @error('code')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Catégorie <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">CatÃ©gorie <span class="text-red-500">*</span></label>
                     <select name="categorie" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
-                        @foreach(['strategique'=>'Stratégique','operationnel'=>'Opérationnel','financier'=>'Financier','juridique'=>'Juridique','reputationnel'=>'Réputationnel','securitaire'=>'Sécuritaire','naturel'=>'Naturel','autre'=>'Autre'] as $v => $l)
+                        @foreach(['strategique'=>'StratÃ©gique','operationnel'=>'OpÃ©rationnel','financier'=>'Financier','juridique'=>'Juridique','reputationnel'=>'RÃ©putationnel','securitaire'=>'SÃ©curitaire','naturel'=>'Naturel','autre'=>'Autre'] as $v => $l)
                         <option value="{{ $v }}" {{ old('categorie') === $v ? 'selected' : '' }}>{{ $l }}</option>
                         @endforeach
                     </select>
@@ -56,7 +60,7 @@
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Libellé <span class="text-red-500">*</span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">LibellÃ© <span class="text-red-500">*</span></label>
                 <input type="text" name="libelle" value="{{ old('libelle') }}" required maxlength="400"
                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500 @error('libelle') border-red-500 @enderror">
                 @error('libelle')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
@@ -67,21 +71,21 @@
                 <textarea name="description" rows="2" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">{{ old('description') }}</textarea>
             </div>
 
-            <!-- Évaluation probabilité × impact -->
+            <!-- Ã‰valuation probabilitÃ© Ã— impact -->
             <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
                 <div class="flex items-center justify-between mb-3">
-                    <h3 class="text-sm font-semibold text-gray-700">Évaluation du risque</h3>
+                    <h3 class="text-sm font-semibold text-gray-700">Ã‰valuation du risque</h3>
                     <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold"
                           :class="niveau.cls">
-                        Score : <span x-text="score" class="mx-1"></span>/25 — <span x-text="niveau.label"></span>
+                        Score : <span x-text="score" class="mx-1"></span>/25 â€” <span x-text="niveau.label"></span>
                     </span>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Probabilité <span class="text-red-500">*</span></label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">ProbabilitÃ© <span class="text-red-500">*</span></label>
                         <select name="probabilite" x-model="probabilite" required
                                 class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
-                            @foreach(['tres_faible'=>'Très faible (1)','faible'=>'Faible (2)','moyenne'=>'Moyenne (3)','elevee'=>'Élevée (4)','tres_elevee'=>'Très élevée (5)'] as $v => $l)
+                            @foreach(['tres_faible'=>'TrÃ¨s faible (1)','faible'=>'Faible (2)','moyenne'=>'Moyenne (3)','elevee'=>'Ã‰levÃ©e (4)','tres_elevee'=>'TrÃ¨s Ã©levÃ©e (5)'] as $v => $l)
                             <option value="{{ $v }}" {{ old('probabilite', 'moyenne') === $v ? 'selected' : '' }}>{{ $l }}</option>
                             @endforeach
                         </select>
@@ -90,7 +94,7 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">Impact <span class="text-red-500">*</span></label>
                         <select name="impact" x-model="impact" required
                                 class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
-                            @foreach(['negligeable'=>'Négligeable (1)','mineur'=>'Mineur (2)','modere'=>'Modéré (3)','majeur'=>'Majeur (4)','catastrophique'=>'Catastrophique (5)'] as $v => $l)
+                            @foreach(['negligeable'=>'NÃ©gligeable (1)','mineur'=>'Mineur (2)','modere'=>'ModÃ©rÃ© (3)','majeur'=>'Majeur (4)','catastrophique'=>'Catastrophique (5)'] as $v => $l)
                             <option value="{{ $v }}" {{ old('impact', 'modere') === $v ? 'selected' : '' }}>{{ $l }}</option>
                             @endforeach
                         </select>
@@ -100,13 +104,13 @@
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Mesures de mitigation</label>
-                <textarea name="mesures_mitigation" rows="3" placeholder="Actions préventives pour réduire la probabilité ou l'impact..."
+                <textarea name="mesures_mitigation" rows="3" placeholder="Actions prÃ©ventives pour rÃ©duire la probabilitÃ© ou l'impact..."
                           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">{{ old('mesures_mitigation') }}</textarea>
             </div>
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Plan de contingence</label>
-                <textarea name="plan_contingence" rows="3" placeholder="Actions à mener si le risque se matérialise..."
+                <textarea name="plan_contingence" rows="3" placeholder="Actions Ã  mener si le risque se matÃ©rialise..."
                           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">{{ old('plan_contingence') }}</textarea>
             </div>
 
@@ -114,7 +118,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Responsable du traitement</label>
                     <select name="responsable_id" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="">— Non assigné —</option>
+                        <option value="">â€” Non assignÃ© â€”</option>
                         @foreach($responsables as $u)
                         <option value="{{ $u->id }}" {{ old('responsable_id') == $u->id ? 'selected' : '' }}>
                             {{ trim($u->prenom . ' ' . $u->name) }}
@@ -123,7 +127,7 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Échéance de traitement</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Ã‰chÃ©ance de traitement</label>
                     <input type="date" name="date_echeance_traitement" value="{{ old('date_echeance_traitement') }}"
                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
                 </div>

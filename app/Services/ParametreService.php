@@ -3,7 +3,10 @@
 namespace App\Services;
 
 use App\Models\Parametre;
+use App\Models\Papa;
+use App\Models\Referentiel;
 use App\Models\User;
+use App\Models\LibelleMetier;
 use Illuminate\Support\Facades\Cache;
 
 class ParametreService
@@ -45,15 +48,32 @@ class ParametreService
         }
     }
 
-    public function hubStats(): array
+    public function hubStats(?User $user = null): array
     {
+        if ($user && ! $user->resolveVisibilityScope()->isGlobal) {
+            return [
+                'total_parametres' => null,
+                'referentiels' => null,
+                'referentiels_actifs' => null,
+                'libelles_modifies' => null,
+                'papa_actif' => Papa::query()
+                    ->visibleTo($user)
+                    ->where('statut', 'en_execution')
+                    ->latest('annee')
+                    ->first()?->code,
+                'maintenance' => $this->get('app_maintenance', false),
+                'is_partial' => true,
+            ];
+        }
+
         return [
-            'total_parametres'    => Parametre::count(),
-            'referentiels'        => \App\Models\Referentiel::count(),
-            'referentiels_actifs' => \App\Models\Referentiel::where('actif', true)->count(),
-            'libelles_modifies'   => \App\Models\LibelleMetier::whereNotNull('valeur_courante')->count(),
-            'papa_actif'          => \App\Models\Papa::where('statut', 'en_execution')->first()?->code,
-            'maintenance'         => $this->get('app_maintenance', false),
+            'total_parametres' => Parametre::count(),
+            'referentiels' => Referentiel::count(),
+            'referentiels_actifs' => Referentiel::where('actif', true)->count(),
+            'libelles_modifies' => LibelleMetier::whereNotNull('valeur_courante')->count(),
+            'papa_actif' => Papa::where('statut', 'en_execution')->latest('annee')->first()?->code,
+            'maintenance' => $this->get('app_maintenance', false),
+            'is_partial' => false,
         ];
     }
 

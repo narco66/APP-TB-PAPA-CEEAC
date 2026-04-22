@@ -20,6 +20,7 @@ class DecisionController extends Controller
         $this->authorize('viewAny', Decision::class);
 
         $query = Decision::with(['papa', 'actionPrioritaire', 'activite', 'prisePar', 'valideePar'])
+            ->visibleTo($request->user())
             ->orderByDesc('created_at');
 
         if ($request->filled('papa_id')) {
@@ -35,9 +36,10 @@ class DecisionController extends Controller
         }
 
         $decisions = $query->paginate(20);
-        $papas = Papa::orderByDesc('annee')->get(['id', 'code', 'libelle']);
+        $papas = Papa::query()->visibleTo($request->user())->orderByDesc('annee')->get(['id', 'code', 'libelle']);
+        $scopeLabel = $request->user()->scopeLabel();
 
-        return view('decisions.index', compact('decisions', 'papas'));
+        return view('decisions.index', compact('decisions', 'papas', 'scopeLabel'));
     }
 
     public function create(Request $request)
@@ -49,16 +51,21 @@ class DecisionController extends Controller
             $papa = Papa::find($request->integer('papa_id'));
         }
 
-        $papas = Papa::orderByDesc('annee')->get(['id', 'code', 'libelle']);
+        $papas = Papa::query()->visibleTo($request->user())->orderByDesc('annee')->get(['id', 'code', 'libelle']);
         $actions = collect();
 
-        if ($papa) {
+        if ($papa && $papa->canBeAccessedBy($request->user())) {
             $actions = ActionPrioritaire::where('papa_id', $papa->id)
+                ->visibleTo($request->user())
                 ->orderBy('ordre')
                 ->get(['id', 'code', 'libelle']);
+        } else {
+            $papa = null;
         }
 
-        return view('decisions.create', compact('papas', 'papa', 'actions'));
+        $scopeLabel = $request->user()->scopeLabel();
+
+        return view('decisions.create', compact('papas', 'papa', 'actions', 'scopeLabel'));
     }
 
     public function store(Request $request)
@@ -86,6 +93,22 @@ class DecisionController extends Controller
         $data['statut'] = $data['statut'] ?? 'brouillon';
         $data['mise_en_oeuvre_obligatoire'] = (bool) ($data['mise_en_oeuvre_obligatoire'] ?? false);
 
+        if (! empty($data['papa_id']) && ! Papa::query()->visibleTo($request->user())->whereKey($data['papa_id'])->exists()) {
+            return back()->withErrors(['papa_id' => 'PAPA hors perimetre.'])->withInput();
+        }
+
+        if (! empty($data['action_prioritaire_id']) && ! ActionPrioritaire::query()->visibleTo($request->user())->whereKey($data['action_prioritaire_id'])->exists()) {
+            return back()->withErrors(['action_prioritaire_id' => 'Action prioritaire hors perimetre.'])->withInput();
+        }
+
+        if (! empty($data['activite_id']) && ! \App\Models\Activite::query()->visibleTo($request->user())->whereKey($data['activite_id'])->exists()) {
+            return back()->withErrors(['activite_id' => 'Activite hors perimetre.'])->withInput();
+        }
+
+        if (! empty($data['budget_papa_id']) && ! \App\Models\BudgetPapa::query()->visibleTo($request->user())->whereKey($data['budget_papa_id'])->exists()) {
+            return back()->withErrors(['budget_papa_id' => 'Budget hors perimetre.'])->withInput();
+        }
+
         $decision = $this->decisionService->creer($data, $request->user());
 
         return redirect()
@@ -100,6 +123,7 @@ class DecisionController extends Controller
         $decision->load(['papa', 'actionPrioritaire', 'activite', 'prisePar', 'valideePar', 'attachments.document.categorie', 'attachments.validePar']);
 
         $documents = Document::query()
+            ->visibleTo(auth()->user())
             ->with('categorie')
             ->latest('created_at')
             ->limit(50)
@@ -156,6 +180,8 @@ class DecisionController extends Controller
         ]);
 
         $document = Document::findOrFail($data['document_id']);
+
+        abort_unless($document->canBeAccessedBy($request->user()), 403);
 
         $this->decisionService->rattacherDocument(
             $decision,

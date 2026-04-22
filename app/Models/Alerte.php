@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -71,6 +72,34 @@ class Alerte extends Model
     public function actionsCorrectives(): HasMany
     {
         return $this->hasMany(ActionCorrective::class);
+    }
+
+    public function scopeVisibleTo(Builder $query, User $user): Builder
+    {
+        $scope = $user->resolveVisibilityScope();
+
+        if ($scope->isGlobal) {
+            return $query;
+        }
+
+        return $query->where(function (Builder $builder) use ($user, $scope) {
+            $builder->where('destinataire_id', $user->id);
+
+            if ($scope->directionIds !== []) {
+                $builder->orWhereIn('direction_id', $scope->directionIds);
+            }
+
+            if ($scope->departementIds !== []) {
+                $builder->orWhereHas('papa.actionsPrioritaires', function (Builder $q) use ($scope) {
+                    $q->whereIn('departement_id', $scope->departementIds);
+                });
+            }
+        });
+    }
+
+    public function canBeAccessedBy(User $user): bool
+    {
+        return static::query()->whereKey($this->id)->visibleTo($user)->exists();
     }
 
     public function scopeNouvelle($query)

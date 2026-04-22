@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\AppliesVisibilityScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
@@ -14,6 +14,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 class Rapport extends Model
 {
     use HasFactory;
+    use AppliesVisibilityScope;
     use SoftDeletes, LogsActivity;
 
     protected $table = 'rapports';
@@ -69,32 +70,9 @@ class Rapport extends Model
         return $this->morphMany(Document::class, 'documentable');
     }
 
-    public function scopeVisibleTo(Builder $query, User $user): Builder
-    {
-        if (
-            $user->can('rapport.valider')
-            || $user->can('rapport.publier')
-            || $user->can('admin.utilisateurs')
-        ) {
-            return $query;
-        }
-
-        return $query->where(function (Builder $builder) use ($user) {
-            $builder->where('redige_par', $user->id);
-
-            if ($user->direction_id) {
-                $builder->orWhere('direction_id', $user->direction_id);
-            }
-        });
-    }
-
     public function canBeAccessedBy(User $user): bool
     {
-        if (
-            $user->can('rapport.valider')
-            || $user->can('rapport.publier')
-            || $user->can('admin.utilisateurs')
-        ) {
+        if ($user->can('rapport.valider') || $user->can('rapport.publier') || $user->can('admin.utilisateurs')) {
             return true;
         }
 
@@ -102,9 +80,16 @@ class Rapport extends Model
             return true;
         }
 
-        return $user->direction_id !== null
-            && $this->direction_id !== null
-            && $this->direction_id === $user->direction_id;
+        return $this->isVisibleTo($user);
+    }
+
+    protected function visibilityScopeColumns(): array
+    {
+        return [
+            'departement' => 'departement_id',
+            'direction' => 'direction_id',
+            'service' => null,
+        ];
     }
 
     public function couleurStatut(): string

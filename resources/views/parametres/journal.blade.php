@@ -11,6 +11,9 @@
 
 @section('content')
 <div class="space-y-6">
+    <div class="rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-800">
+        <span class="font-semibold">Perimetre de donnees :</span> {{ $scopeLabel }}
+    </div>
 
     {{-- En-tête --}}
     <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">

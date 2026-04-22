@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Database\Factories\UserFactory;
+use App\Support\Security\UserVisibilityScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -26,7 +27,11 @@ class User extends Authenticatable
         'fonction',
         'matricule',
         'avatar',
+        'departement_id',
         'direction_id',
+        'service_id',
+        'scope_level',
+        'is_transversal',
         'actif',
         'locale',
     ];
@@ -42,6 +47,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'derniere_connexion' => 'datetime',
             'password' => 'hashed',
+            'is_transversal' => 'boolean',
             'actif' => 'boolean',
         ];
     }
@@ -51,6 +57,21 @@ class User extends Authenticatable
     public function direction(): BelongsTo
     {
         return $this->belongsTo(Direction::class);
+    }
+
+    public function departement(): BelongsTo
+    {
+        return $this->belongsTo(Departement::class);
+    }
+
+    public function service(): BelongsTo
+    {
+        return $this->belongsTo(Service::class);
+    }
+
+    public function transversalScopes(): HasMany
+    {
+        return $this->hasMany(TransversalScope::class);
     }
 
     public function notificationsApp(): HasMany
@@ -91,6 +112,27 @@ class User extends Authenticatable
     public function nomComplet(): string
     {
         return trim(($this->prenom ?? '') . ' ' . $this->name);
+    }
+
+    public function resolveVisibilityScope(): UserVisibilityScope
+    {
+        return app(\App\Services\Security\UserScopeResolver::class)->resolve($this);
+    }
+
+    public function scopeLabel(): string
+    {
+        $scope = $this->resolveVisibilityScope();
+
+        if ($scope->isGlobal || $scope->isTransversal) {
+            return $scope->label();
+        }
+
+        return match ($scope->level) {
+            'service' => 'Perimetre de donnees : Service ' . ($this->service?->libelleAffichage() ?? 'non defini'),
+            'direction' => 'Perimetre de donnees : Direction ' . ($this->direction?->libelleAffichage() ?? 'non definie'),
+            'departement' => 'Perimetre de donnees : Departement ' . ($this->departement?->libelleAffichage() ?? $this->direction?->departement?->libelle ?? 'non defini'),
+            default => $scope->label(),
+        };
     }
 
     public function getAvatarUrlAttribute(): string

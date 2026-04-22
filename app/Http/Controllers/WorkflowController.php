@@ -18,6 +18,7 @@ class WorkflowController extends Controller
         $this->authorize('viewAny', WorkflowInstance::class);
 
         $query = WorkflowInstance::with(['definition', 'etapeCourante', 'demarrePar', 'papa'])
+            ->visibleTo($request->user())
             ->latest('created_at');
 
         if ($request->filled('statut')) {
@@ -29,8 +30,9 @@ class WorkflowController extends Controller
         }
 
         $instances = $query->paginate(20);
+        $scopeLabel = $request->user()->scopeLabel();
 
-        return view('workflows.index', compact('instances'));
+        return view('workflows.index', compact('instances', 'scopeLabel'));
     }
 
     public function show(WorkflowInstance $workflow)
@@ -52,6 +54,7 @@ class WorkflowController extends Controller
     public function demarrerPapa(Request $request, Papa $papa)
     {
         $this->authorize('demarrer', WorkflowInstance::class);
+        abort_unless(Papa::query()->visibleTo($request->user())->whereKey($papa->id)->exists(), 403);
 
         $data = $request->validate([
             'workflow_code' => 'nullable|string|max:100',

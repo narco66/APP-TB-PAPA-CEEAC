@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Services\Security\UserScopeResolver;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -74,6 +76,39 @@ class Document extends Model
     public function versions(): HasMany
     {
         return $this->hasMany(Document::class, 'version_precedente_id');
+    }
+
+    public function scopeVisibleTo(Builder $query, User $user): Builder
+    {
+        $resolver = app(UserScopeResolver::class);
+        $scope = $resolver->resolve($user);
+
+        if ($scope->isGlobal) {
+            return $query;
+        }
+
+        return $query->where(function (Builder $builder) use ($user, $resolver) {
+            $builder->where('depose_par', $user->id)
+                ->orWhereHasMorph('documentable', [Activite::class], fn (Builder $q) => $q->visibleTo($user))
+                ->orWhereHasMorph('documentable', [ResultatAttendu::class], function (Builder $q) use ($user) {
+                    $q->whereHas('objectifImmediats.actionPrioritaire', fn (Builder $aq) => $aq->visibleTo($user));
+                })
+                ->orWhereHasMorph('documentable', [Papa::class], function (Builder $q) use ($user) {
+                    $q->whereHas('actionsPrioritaires', fn (Builder $aq) => $aq->visibleTo($user));
+                })
+                ->orWhereHas('deposePar', function (Builder $q) use ($user, $resolver) {
+                    $resolver->applyToQuery($q, $user, [
+                        'departement' => 'departement_id',
+                        'direction' => 'direction_id',
+                        'service' => 'service_id',
+                    ]);
+                });
+        });
+    }
+
+    public function canBeAccessedBy(User $user): bool
+    {
+        return static::query()->whereKey($this->id)->visibleTo($user)->exists();
     }
 
     public function decisionAttachments(): HasMany

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Registre des risques — ' . $papa->code)
+@section('title', 'Registre des risques - ' . $papa->code)
 
 @section('content')
 
@@ -14,14 +14,21 @@
         <h1 class="text-2xl font-bold text-gray-900">Registre des risques</h1>
         <p class="text-sm text-gray-500 mt-1">{{ $papa->libelle }}</p>
     </div>
-    @can('papa.modifier')
-    @if($papa->estEditable())
-    <a href="{{ route('risques.create', $papa) }}"
-       class="inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700">
-        <i class="fas fa-plus"></i> Nouveau risque
-    </a>
-    @endif
-    @endcan
+    <div class="flex flex-wrap gap-2">
+        <a href="{{ route('risques.print', $papa) }}"
+           target="_blank"
+           class="inline-flex items-center gap-2 bg-white text-gray-700 px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 hover:bg-gray-50">
+            <i class="fas fa-print"></i> Version imprimable
+        </a>
+        @can('papa.modifier')
+        @if($papa->estEditable())
+        <a href="{{ route('risques.create', $papa) }}"
+           class="inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700">
+            <i class="fas fa-plus"></i> Nouveau risque
+        </a>
+        @endif
+        @endcan
+    </div>
 </div>
 
 @if(session('success'))
@@ -29,6 +36,10 @@
     <i class="fas fa-check-circle mr-2"></i> {{ session('success') }}
 </div>
 @endif
+
+<div class="rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-800 mb-4">
+    <span class="font-semibold">Périmètre de données :</span> {{ $scopeLabel }}
+</div>
 
 <!-- Statistiques -->
 <div class="grid grid-cols-4 gap-4 mb-6">
@@ -50,36 +61,35 @@
     </div>
 </div>
 
-<!-- Matrice de risques 5×5 -->
+<!-- Matrice de risques 5x5 -->
 <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-    <h2 class="text-base font-semibold text-gray-900 mb-4">Matrice des risques (Probabilité × Impact)</h2>
+    <h2 class="text-base font-semibold text-gray-900 mb-4">Matrice des risques (Probabilité x Impact)</h2>
 
     @php
     $labelsProbabilite = [
         'tres_faible' => 'Très faible',
-        'faible'      => 'Faible',
-        'moyenne'     => 'Moyenne',
-        'elevee'      => 'Élevée',
+        'faible' => 'Faible',
+        'moyenne' => 'Moyenne',
+        'elevee' => 'Élevée',
         'tres_elevee' => 'Très élevée',
     ];
     $labelsImpact = [
-        'negligeable'   => 'Négligeable',
-        'mineur'        => 'Mineur',
-        'modere'        => 'Modéré',
-        'majeur'        => 'Majeur',
+        'negligeable' => 'Négligeable',
+        'mineur' => 'Mineur',
+        'modere' => 'Modéré',
+        'majeur' => 'Majeur',
         'catastrophique' => 'Catastrophique',
     ];
-    // Scores probabilité/impact (1-5)
-    $scoresProb = ['tres_faible'=>1, 'faible'=>2, 'moyenne'=>3, 'elevee'=>4, 'tres_elevee'=>5];
-    $scoresImp  = ['negligeable'=>1, 'mineur'=>2, 'modere'=>3, 'majeur'=>4, 'catastrophique'=>5];
+    $scoresProb = ['tres_faible' => 1, 'faible' => 2, 'moyenne' => 3, 'elevee' => 4, 'tres_elevee' => 5];
+    $scoresImp = ['negligeable' => 1, 'mineur' => 2, 'modere' => 3, 'majeur' => 4, 'catastrophique' => 5];
 
-    $couleurCellule = function($prob, $imp) use ($scoresProb, $scoresImp) {
+    $couleurCellule = function ($prob, $imp) use ($scoresProb, $scoresImp) {
         $score = $scoresProb[$prob] * $scoresImp[$imp];
-        return match(true) {
+        return match (true) {
             $score >= 15 => 'bg-red-100 border-red-200',
-            $score >= 8  => 'bg-orange-100 border-orange-200',
-            $score >= 3  => 'bg-yellow-50 border-yellow-200',
-            default      => 'bg-green-50 border-green-200',
+            $score >= 8 => 'bg-orange-100 border-orange-200',
+            $score >= 3 => 'bg-yellow-50 border-yellow-200',
+            default => 'bg-green-50 border-green-200',
         };
     };
     @endphp
@@ -88,7 +98,7 @@
         <table class="w-full text-xs border-collapse">
             <thead>
                 <tr>
-                    <th class="p-2 text-left text-gray-500 border border-gray-200 w-28">Probabilité \ Impact</th>
+                    <th class="p-2 text-left text-gray-500 border border-gray-200 w-28">Probabilité / Impact</th>
                     @foreach($labelsImpact as $imp => $labImp)
                     <th class="p-2 text-center border border-gray-200 font-medium text-gray-700">{{ $labImp }}</th>
                     @endforeach
@@ -102,7 +112,7 @@
                     @php $cellRisques = $matrice[$prob][$imp]; @endphp
                     <td class="p-2 border border-gray-200 text-center {{ $couleurCellule($prob, $imp) }} min-h-12">
                         @if($cellRisques->isEmpty())
-                        <span class="text-gray-300">—</span>
+                        <span class="text-gray-300">-</span>
                         @else
                         @foreach($cellRisques as $r)
                         <a href="{{ route('risques.edit', [$papa, $r]) }}"
@@ -120,7 +130,7 @@
         </table>
     </div>
     <div class="flex items-center gap-6 mt-3 text-xs text-gray-600">
-        <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 bg-red-200 rounded"></span> Critique (≥15)</span>
+        <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 bg-red-200 rounded"></span> Critique (>=15)</span>
         <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 bg-orange-200 rounded"></span> Élevé (8-14)</span>
         <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 bg-yellow-100 rounded"></span> Modéré (3-7)</span>
         <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 bg-green-100 rounded"></span> Faible (&lt;3)</span>
@@ -152,11 +162,11 @@
             @foreach($risques as $risque)
             @php
             $badgeNiveau = match($risque->niveau_risque) {
-                'rouge'  => 'bg-red-100 text-red-800',
+                'rouge' => 'bg-red-100 text-red-800',
                 'orange' => 'bg-orange-100 text-orange-800',
-                'jaune'  => 'bg-yellow-100 text-yellow-800',
-                'vert'   => 'bg-green-100 text-green-800',
-                default  => 'bg-gray-100 text-gray-700',
+                'jaune' => 'bg-yellow-100 text-yellow-800',
+                'vert' => 'bg-green-100 text-green-800',
+                default => 'bg-gray-100 text-gray-700',
             };
             @endphp
             <tr class="hover:bg-gray-50">
@@ -170,7 +180,7 @@
                 </td>
                 <td class="px-4 py-3 text-center font-bold text-gray-700">{{ $risque->score_risque }}/25</td>
                 <td class="px-4 py-3 text-gray-600">{{ ucfirst(str_replace('_', ' ', $risque->statut)) }}</td>
-                <td class="px-4 py-3 text-gray-600">{{ $risque->responsable?->nomComplet() ?? '—' }}</td>
+                <td class="px-4 py-3 text-gray-600">{{ $risque->responsable?->nomComplet() ?? '-' }}</td>
                 <td class="px-4 py-3">
                     <div class="flex items-center gap-2 justify-end">
                         @can('papa.modifier')

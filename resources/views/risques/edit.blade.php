@@ -14,8 +14,8 @@
     get niveau() {
         const s = this.score;
         if (s >= 15) return {label:'Critique', cls:'text-red-700 bg-red-100'};
-        if (s >= 8)  return {label:'Élevé',    cls:'text-orange-700 bg-orange-100'};
-        if (s >= 3)  return {label:'Modéré',   cls:'text-yellow-700 bg-yellow-100'};
+        if (s >= 8)  return {label:'Ã‰levÃ©',    cls:'text-orange-700 bg-orange-100'};
+        if (s >= 3)  return {label:'ModÃ©rÃ©',   cls:'text-yellow-700 bg-yellow-100'};
         return {label:'Faible', cls:'text-green-700 bg-green-100'};
     }
 }">
@@ -28,6 +28,10 @@
         <span class="text-gray-900 font-medium">{{ $risque->code }}</span>
     </nav>
 
+    <div class="rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-800 mb-4">
+        <span class="font-semibold">Perimetre de donnees :</span> {{ $scopeLabel }}
+    </div>
+
     <div class="bg-white rounded-xl shadow-sm border border-gray-200">
         <div class="px-6 py-4 border-b border-gray-100">
             <h1 class="text-xl font-bold text-gray-900">{{ $risque->code }}</h1>
@@ -38,16 +42,16 @@
             @csrf @method('PUT')
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Libellé <span class="text-red-500">*</span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">LibellÃ© <span class="text-red-500">*</span></label>
                 <input type="text" name="libelle" value="{{ old('libelle', $risque->libelle) }}" required maxlength="400"
                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
             </div>
 
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Catégorie <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">CatÃ©gorie <span class="text-red-500">*</span></label>
                     <select name="categorie" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
-                        @foreach(['strategique'=>'Stratégique','operationnel'=>'Opérationnel','financier'=>'Financier','juridique'=>'Juridique','reputationnel'=>'Réputationnel','securitaire'=>'Sécuritaire','naturel'=>'Naturel','autre'=>'Autre'] as $v => $l)
+                        @foreach(['strategique'=>'StratÃ©gique','operationnel'=>'OpÃ©rationnel','financier'=>'Financier','juridique'=>'Juridique','reputationnel'=>'RÃ©putationnel','securitaire'=>'SÃ©curitaire','naturel'=>'Naturel','autre'=>'Autre'] as $v => $l)
                         <option value="{{ $v }}" {{ old('categorie', $risque->categorie) === $v ? 'selected' : '' }}>{{ $l }}</option>
                         @endforeach
                     </select>
@@ -55,7 +59,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Statut</label>
                     <select name="statut" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
-                        @foreach(['identifie'=>'Identifié','en_traitement'=>'En traitement','residu'=>'Résiduel','clos'=>'Clos'] as $v => $l)
+                        @foreach(['identifie'=>'IdentifiÃ©','en_traitement'=>'En traitement','residu'=>'RÃ©siduel','clos'=>'Clos'] as $v => $l)
                         <option value="{{ $v }}" {{ old('statut', $risque->statut) === $v ? 'selected' : '' }}>{{ $l }}</option>
                         @endforeach
                     </select>
@@ -67,20 +71,20 @@
                 <textarea name="description" rows="2" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">{{ old('description', $risque->description) }}</textarea>
             </div>
 
-            <!-- Évaluation -->
+            <!-- Ã‰valuation -->
             <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
                 <div class="flex items-center justify-between mb-3">
-                    <h3 class="text-sm font-semibold text-gray-700">Évaluation du risque</h3>
+                    <h3 class="text-sm font-semibold text-gray-700">Ã‰valuation du risque</h3>
                     <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold" :class="niveau.cls">
-                        Score : <span x-text="score" class="mx-1"></span>/25 — <span x-text="niveau.label"></span>
+                        Score : <span x-text="score" class="mx-1"></span>/25 â€” <span x-text="niveau.label"></span>
                     </span>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Probabilité</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">ProbabilitÃ©</label>
                         <select name="probabilite" x-model="probabilite"
                                 class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
-                            @foreach(['tres_faible'=>'Très faible (1)','faible'=>'Faible (2)','moyenne'=>'Moyenne (3)','elevee'=>'Élevée (4)','tres_elevee'=>'Très élevée (5)'] as $v => $l)
+                            @foreach(['tres_faible'=>'TrÃ¨s faible (1)','faible'=>'Faible (2)','moyenne'=>'Moyenne (3)','elevee'=>'Ã‰levÃ©e (4)','tres_elevee'=>'TrÃ¨s Ã©levÃ©e (5)'] as $v => $l)
                             <option value="{{ $v }}" {{ old('probabilite', $risque->probabilite) === $v ? 'selected' : '' }}>{{ $l }}</option>
                             @endforeach
                         </select>
@@ -89,7 +93,7 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">Impact</label>
                         <select name="impact" x-model="impact"
                                 class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
-                            @foreach(['negligeable'=>'Négligeable (1)','mineur'=>'Mineur (2)','modere'=>'Modéré (3)','majeur'=>'Majeur (4)','catastrophique'=>'Catastrophique (5)'] as $v => $l)
+                            @foreach(['negligeable'=>'NÃ©gligeable (1)','mineur'=>'Mineur (2)','modere'=>'ModÃ©rÃ© (3)','majeur'=>'Majeur (4)','catastrophique'=>'Catastrophique (5)'] as $v => $l)
                             <option value="{{ $v }}" {{ old('impact', $risque->impact) === $v ? 'selected' : '' }}>{{ $l }}</option>
                             @endforeach
                         </select>
@@ -111,7 +115,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Responsable</label>
                     <select name="responsable_id" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="">— Non assigné —</option>
+                        <option value="">â€” Non assignÃ© â€”</option>
                         @foreach($responsables as $u)
                         <option value="{{ $u->id }}" {{ old('responsable_id', $risque->responsable_id) == $u->id ? 'selected' : '' }}>
                             {{ trim($u->prenom . ' ' . $u->name) }}
@@ -120,12 +124,12 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Échéance traitement</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Ã‰chÃ©ance traitement</label>
                     <input type="date" name="date_echeance_traitement" value="{{ old('date_echeance_traitement', $risque->date_echeance_traitement?->format('Y-m-d')) }}"
                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Dernière revue</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">DerniÃ¨re revue</label>
                     <input type="date" name="date_derniere_revue" value="{{ old('date_derniere_revue', $risque->date_derniere_revue?->format('Y-m-d')) }}"
                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
@@ -136,7 +140,7 @@
                     <i class="fas fa-arrow-left mr-1"></i> Annuler
                 </a>
                 <button type="submit" class="inline-flex items-center gap-2 bg-indigo-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700">
-                    <i class="fas fa-save"></i> Mettre à jour
+                    <i class="fas fa-save"></i> Mettre Ã  jour
                 </button>
             </div>
         </form>

@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Models\Activite;
+use App\Models\Alerte;
+use App\Observers\ActiviteObserver;
 use App\Models\Decision;
 use App\Models\Document;
 use App\Models\Indicateur;
@@ -10,6 +12,7 @@ use App\Models\Papa;
 use App\Models\Rapport;
 use App\Models\WorkflowInstance;
 use App\Policies\ActivitePolicy;
+use App\Policies\AlertePolicy;
 use App\Policies\DecisionPolicy;
 use App\Policies\DocumentPolicy;
 use App\Policies\IndicateurPolicy;
@@ -32,7 +35,7 @@ class AppServiceProvider extends ServiceProvider
             $db = config('database.connections.' . config('database.default') . '.database');
 
             if (in_array($event->command, $dangerousCommands, true)
-                && app()->environment('local', 'staging')
+                && ! app()->environment('local', 'testing')
                 && $db === 'tb_papa_ceeac'
             ) {
                 $event->output->writeln(
@@ -48,9 +51,13 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // ── Observers ───────────────────────────────────────────────────────
+        Activite::observe(ActiviteObserver::class);
+
         // ── Policies ────────────────────────────────────────────────────────
         Gate::policy(Papa::class, PapaPolicy::class);
         Gate::policy(Activite::class, ActivitePolicy::class);
+        Gate::policy(Alerte::class, AlertePolicy::class);
         Gate::policy(Document::class, DocumentPolicy::class);
         Gate::policy(Indicateur::class, IndicateurPolicy::class);
         Gate::policy(Decision::class, DecisionPolicy::class);
@@ -86,6 +93,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('alerte.escalader', fn($user) => $hasPermission($user, 'alerte.escalader'));
         Gate::define('alerte.configurer', fn($user) => $hasPermission($user, 'alerte.configurer'));
         Gate::define('admin.utilisateurs', fn($user) => $hasPermission($user, 'admin.utilisateurs'));
+        Gate::define('admin.importer', fn($user) => $hasPermission($user, 'admin.importer'));
         Gate::define('admin.audit_log', fn($user) => $hasPermission($user, 'admin.audit_log'));
         Gate::define('rapport.voir', fn($user) => $hasPermission($user, 'rapport.voir'));
         Gate::define('rapport.valider', fn($user) => $hasPermission($user, 'rapport.valider'));

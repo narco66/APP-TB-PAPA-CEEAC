@@ -10,6 +10,10 @@
 @section('content')
 <div class="space-y-6">
 
+    <div class="rounded-xl border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm text-indigo-800">
+        <span class="font-semibold">Périmètre de données :</span> {{ $scopeLabel }}
+    </div>
+
     <!-- En-tête -->
     <div class="flex items-center justify-between">
         <p class="text-sm text-gray-500">{{ $indicateurs->total() }} indicateur(s)</p>
@@ -50,8 +54,6 @@
         @forelse($indicateurs as $ind)
         @php
             $niveau = $ind->niveauAlerte();
-            $alertColors = ['rouge' => 'red', 'orange' => 'orange', 'vert' => 'green', 'neutre' => 'gray'];
-            $alertColor = $alertColors[$niveau] ?? 'gray';
         @endphp
         <div class="p-4 border-b border-gray-50 hover:bg-gray-50 transition">
             <div class="flex items-center justify-between flex-wrap gap-3">
@@ -70,13 +72,12 @@
                     </div>
                     <p class="font-medium text-sm text-gray-800 truncate">{{ $ind->libelle }}</p>
                     <p class="text-xs text-gray-400 mt-0.5">
-                        <i class="fas fa-building mr-1"></i>{{ $ind->direction?->sigle ?? '—' }} •
-                        Resp. : {{ $ind->responsable?->nomComplet() ?? '—' }} •
-                        Fréquence : {{ $ind->frequence_collecte ?? '—' }}
+                        <i class="fas fa-building mr-1"></i>{{ $ind->direction?->sigle ?? '-' }} •
+                        Resp. : {{ $ind->responsable?->nomComplet() ?? '-' }} •
+                        Fréquence : {{ $ind->frequence_collecte ?? '-' }}
                     </p>
                 </div>
                 <div class="flex items-center space-x-6">
-                    <!-- Taux courant -->
                     <div class="text-center w-20">
                         <p class="text-2xl font-bold
                             @if($niveau === 'rouge') text-red-600
@@ -87,14 +88,12 @@
                         </p>
                         <p class="text-xs text-gray-400">Réalisation</p>
                     </div>
-                    <!-- Tendance -->
                     <div class="text-center w-10">
                         <span class="text-xl font-bold text-{{ $ind->couleurTendance() }}-600">
                             {{ $ind->iconesTendance() }}
                         </span>
                         <p class="text-xs text-gray-400">Tendance</p>
                     </div>
-                    <!-- Cible -->
                     <div class="text-center w-24 hidden md:block">
                         <p class="font-semibold text-sm text-gray-700">
                             {{ number_format($ind->valeur_cible_annuelle, 0) }}
@@ -102,7 +101,6 @@
                         </p>
                         <p class="text-xs text-gray-400">Cible annuelle</p>
                     </div>
-                    <!-- Barre -->
                     <div class="w-24 hidden lg:block">
                         <div class="h-2 bg-gray-100 rounded-full">
                             <div class="h-full rounded-full transition-all"

@@ -1,10 +1,10 @@
 @extends('layouts.app')
-@section('title', 'Nouvel objectif immédiat')
-@section('page-title', 'Créer un objectif immédiat')
+@section('title', 'Nouvel objectif immÃ©diat')
+@section('page-title', 'CrÃ©er un objectif immÃ©diat')
 
 @section('breadcrumbs')
     <li><i class="fas fa-chevron-right mx-2 text-xs"></i></li>
-    <li><a href="{{ route('objectifs-immediats.index') }}" class="hover:text-indigo-600">Objectifs immédiats</a></li>
+    <li><a href="{{ route('objectifs-immediats.index') }}" class="hover:text-indigo-600">Objectifs immÃ©diats</a></li>
     @if($ap)
     <li><i class="fas fa-chevron-right mx-2 text-xs"></i></li>
     <li><a href="{{ route('actions-prioritaires.show', $ap) }}" class="hover:text-indigo-600">{{ $ap->code }}</a></li>
@@ -15,13 +15,16 @@
 
 @section('content')
 <div class="max-w-3xl">
+    <div class="mb-4 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-800">
+        <span class="font-semibold">Perimetre de donnees :</span> {{ $scopeLabel }}
+    </div>
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
 
         <form action="{{ route('objectifs-immediats.store') }}" method="POST" class="space-y-5"
               x-data="oiForm()" x-init="init()">
             @csrf
 
-            {{-- Sélection PAPA + AP (affiché si pas de contexte pré-défini) --}}
+            {{-- SÃ©lection PAPA + AP (affichÃ© si pas de contexte prÃ©-dÃ©fini) --}}
             @if(!$ap)
             <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-4">
                 <p class="text-xs font-semibold text-amber-700 uppercase tracking-wide">
@@ -34,10 +37,10 @@
                     </label>
                     <select x-model="papaId" @change="loadAPs()"
                             class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500">
-                        <option value="">-- Sélectionner un PAPA --</option>
+                        <option value="">-- SÃ©lectionner un PAPA --</option>
                         @foreach($papas as $p)
                         <option value="{{ $p->id }}" {{ old('papa_id') == $p->id ? 'selected' : '' }}>
-                            {{ $p->code }} — {{ Str::limit($p->libelle, 60) }}
+                            {{ $p->code }} â€” {{ Str::limit($p->libelle, 60) }}
                         </option>
                         @endforeach
                     </select>
@@ -52,7 +55,7 @@
                             class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 @error('action_prioritaire_id') border-red-500 @enderror">
                         <option value="">-- Choisir d'abord un PAPA --</option>
                         <template x-for="ap in aps" :key="ap.id">
-                            <option :value="ap.id" x-text="ap.code + ' — ' + ap.libelle.substring(0, 60)"></option>
+                            <option :value="ap.id" x-text="ap.code + ' â€” ' + ap.libelle.substring(0, 60)"></option>
                         </template>
                     </select>
                     @error('action_prioritaire_id')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
@@ -63,7 +66,7 @@
             {{-- Contexte AP --}}
             <div class="bg-indigo-50 rounded-lg p-3 border border-indigo-100">
                 <p class="text-xs text-indigo-600 font-medium mb-0.5">Action prioritaire parente</p>
-                <p class="font-semibold text-indigo-900">{{ $ap->code }} — {{ Str::limit($ap->libelle, 100) }}</p>
+                <p class="font-semibold text-indigo-900">{{ $ap->code }} â€” {{ Str::limit($ap->libelle, 100) }}</p>
                 <p class="text-xs text-indigo-500 mt-0.5">PAPA : {{ $ap->papa?->code }}</p>
             </div>
             @endif
@@ -87,10 +90,10 @@
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">
-                    Libellé <span class="text-red-500">*</span>
+                    LibellÃ© <span class="text-red-500">*</span>
                 </label>
                 <input type="text" name="libelle" value="{{ old('libelle') }}"
-                       placeholder="Intitulé de l'objectif immédiat"
+                       placeholder="IntitulÃ© de l'objectif immÃ©diat"
                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 @error('libelle') border-red-500 @enderror">
                 @error('libelle')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
             </div>
@@ -105,7 +108,7 @@
                 <label class="block text-sm font-medium text-gray-700 mb-1">Responsable</label>
                 <select name="responsable_id"
                         class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500">
-                    <option value="">-- Non assigné --</option>
+                    <option value="">-- Non assignÃ© --</option>
                     @foreach($users as $u)
                     <option value="{{ $u->id }}" {{ old('responsable_id') == $u->id ? 'selected' : '' }}>
                         {{ $u->prenom }} {{ $u->name }}
@@ -125,7 +128,7 @@
                    class="px-5 py-2 text-sm text-gray-600 hover:text-gray-800">Annuler</a>
                 <button type="submit"
                         class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition">
-                    <i class="fas fa-save mr-1"></i>Créer l'objectif immédiat
+                    <i class="fas fa-save mr-1"></i>CrÃ©er l'objectif immÃ©diat
                 </button>
             </div>
         </form>

@@ -23,7 +23,7 @@ class GeneratedReportController extends Controller
 
         $query = GeneratedReport::query()
             ->with(['definition', 'user', 'papa'])
-            ->where('user_id', $user->id)
+            ->visibleTo($user)
             ->latest();
 
         if ($request->filled('statut')) {

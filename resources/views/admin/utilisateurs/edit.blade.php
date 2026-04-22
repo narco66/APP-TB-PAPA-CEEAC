@@ -15,12 +15,13 @@
             <div>
                 <h1 class="text-xl font-bold text-gray-900">{{ $user->nomComplet() }}</h1>
                 <p class="text-sm text-gray-500 mt-1">{{ $user->email }}</p>
+                <p class="text-sm text-indigo-700 mt-1">{{ $scopeLabel }}</p>
             </div>
             <div class="flex items-center gap-2">
                 @if($user->actif)
                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-700">Actif</span>
                 @else
-                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-red-100 text-red-700">Désactivé</span>
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-red-100 text-red-700">DÃƒÂ©sactivÃƒÂ©</span>
                 @endif
                 @foreach($user->roles as $role)
                 <span class="inline-block bg-indigo-100 text-indigo-700 text-xs px-2 py-0.5 rounded font-medium">
@@ -41,7 +42,7 @@
                     @error('name')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Prénom</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">PrÃƒÂ©nom</label>
                     <input type="text" name="prenom" value="{{ old('prenom', $user->prenom) }}" maxlength="100"
                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
@@ -76,7 +77,7 @@
                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Téléphone</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">TÃƒÂ©lÃƒÂ©phone</label>
                     <input type="text" name="telephone" value="{{ old('telephone', $user->telephone) }}" maxlength="30"
                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
@@ -99,16 +100,16 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Direction</label>
                     <select name="direction_id" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="">— Non assigné —</option>
+                        <option value="">Ã¢â‚¬â€ Non assignÃƒÂ© Ã¢â‚¬â€</option>
                         @foreach($directions as $dir)
                         <option value="{{ $dir->id }}" {{ old('direction_id', $user->direction_id) == $dir->id ? 'selected' : '' }}>
-                            {{ $dir->code }} — {{ $dir->libelle }}
+                            {{ $dir->code }} Ã¢â‚¬â€ {{ $dir->libelle }}
                         </option>
                         @endforeach
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Rôle <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">RÃƒÂ´le <span class="text-red-500">*</span></label>
                     <select name="role" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
                         @foreach($roles as $role)
                         <option value="{{ $role->name }}" {{ $user->hasRole($role->name) ? 'selected' : '' }}>
@@ -131,7 +132,7 @@
                     <i class="fas fa-arrow-left mr-1"></i> Annuler
                 </a>
                 <button type="submit" class="inline-flex items-center gap-2 bg-indigo-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700">
-                    <i class="fas fa-save"></i> Mettre à jour
+                    <i class="fas fa-save"></i> Mettre ÃƒÂ  jour
                 </button>
             </div>
         </form>

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Budget — ' . $papa->code)
+@section('title', 'Budget - ' . $papa->code)
 @section('page-title', 'Situation budgétaire')
 
 @section('breadcrumbs')
@@ -21,62 +21,76 @@
     </div>
     @endif
 
+    <div class="rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-800">
+        <span class="font-semibold">Périmètre de données :</span> {{ $scopeLabel }}
+    </div>
+
     <!-- En-tête -->
     <div class="flex items-start justify-between flex-wrap gap-4">
         <div>
             <p class="text-sm text-gray-500 mt-1">{{ $papa->libelle }}</p>
             @if(!$papa->estEditable())
             <span class="inline-flex items-center gap-1 mt-1 px-2 py-0.5 bg-amber-100 text-amber-700 text-xs rounded-full">
-                <i class="fas fa-lock"></i> PAPA verrouillé — modifications désactivées
+                <i class="fas fa-lock"></i> PAPA verrouillé - modifications désactivées
             </span>
             @endif
         </div>
-        @can('budget.creer')
-        @if($papa->estEditable())
-        <a href="{{ route('budgets.create', $papa) }}"
-           class="inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition">
-            <i class="fas fa-plus"></i> Nouvelle ligne budgétaire
-        </a>
-        @else
-        <span title="Le PAPA est verrouillé"
-              class="inline-flex items-center gap-2 bg-gray-200 text-gray-400 px-4 py-2 rounded-lg text-sm font-medium cursor-not-allowed">
-            <i class="fas fa-lock"></i> Nouvelle ligne budgétaire
-        </span>
-        @endif
-        @endcan
+        <div class="flex flex-wrap gap-2">
+            <a href="{{ route('budgets.print', [$papa] + request()->only('source_financement', 'action_prioritaire_id', 'annee_budgetaire')) }}"
+               target="_blank"
+               class="inline-flex items-center gap-2 bg-white text-gray-700 px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 hover:bg-gray-50 transition">
+                <i class="fas fa-print"></i> Version imprimable
+            </a>
+            @can('budget.creer')
+            @if($papa->estEditable())
+            <a href="{{ route('budgets.create', $papa) }}"
+               class="inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition">
+                <i class="fas fa-plus"></i> Nouvelle ligne budgétaire
+            </a>
+            @else
+            <span title="Le PAPA est verrouillé"
+                  class="inline-flex items-center gap-2 bg-gray-200 text-gray-400 px-4 py-2 rounded-lg text-sm font-medium cursor-not-allowed">
+                <i class="fas fa-lock"></i> Nouvelle ligne budgétaire
+            </span>
+            @endif
+            @endcan
+        </div>
     </div>
 
     <!-- Filtres -->
     <form method="GET" action="{{ route('budgets.index', $papa) }}"
           class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex flex-wrap gap-3 items-end">
 
-        {{-- Sélecteur PAPA --}}
         <div>
             <label class="block text-xs font-medium text-gray-500 mb-1">PAPA</label>
             <select name="_papa" onchange="window.location=this.value"
                     class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500">
                 @foreach($papas as $p)
-                <option value="{{ route('budgets.index', $p) }}{{ request()->has('source_financement') || request()->has('action_prioritaire_id') || request()->has('annee_budgetaire') ? '?' . http_build_query(request()->only('source_financement','annee_budgetaire')) : '' }}"
+                <option value="{{ route('budgets.index', $p) }}{{ request()->has('source_financement') || request()->has('action_prioritaire_id') || request()->has('annee_budgetaire') ? '?' . http_build_query(request()->only('source_financement', 'action_prioritaire_id', 'annee_budgetaire')) : '' }}"
                         {{ $p->id === $papa->id ? 'selected' : '' }}>
-                    {{ $p->code }} — {{ $p->annee }}
+                    {{ $p->code }} - {{ $p->annee }}
                 </option>
                 @endforeach
             </select>
         </div>
 
-        {{-- Source de financement --}}
         <div>
             <label class="block text-xs font-medium text-gray-500 mb-1">Source</label>
             <select name="source_financement"
                     class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500">
                 <option value="">Toutes sources</option>
-                @foreach(['budget_ceeac' => 'Budget CEEAC', 'contribution_etat_membre' => 'Contribution État membre', 'partenaire_technique_financier' => 'PTF', 'fonds_propres' => 'Fonds propres', 'autre' => 'Autre'] as $v => $l)
+                @foreach([
+                    'budget_ceeac' => 'Budget CEEAC',
+                    'contribution_etat_membre' => 'Contribution État membre',
+                    'partenaire_technique_financier' => 'PTF',
+                    'fonds_propres' => 'Fonds propres',
+                    'autre' => 'Autre'
+                ] as $v => $l)
                 <option value="{{ $v }}" {{ request('source_financement') === $v ? 'selected' : '' }}>{{ $l }}</option>
                 @endforeach
             </select>
         </div>
 
-        {{-- Action prioritaire --}}
         @if($actionsPrioritaires->isNotEmpty())
         <div>
             <label class="block text-xs font-medium text-gray-500 mb-1">Action prioritaire</label>
@@ -85,14 +99,13 @@
                 <option value="">Toutes les AP</option>
                 @foreach($actionsPrioritaires as $ap)
                 <option value="{{ $ap->id }}" {{ request('action_prioritaire_id') == $ap->id ? 'selected' : '' }}>
-                    {{ $ap->code }} — {{ Str::limit($ap->libelle, 40) }}
+                    {{ $ap->code }} - {{ Str::limit($ap->libelle, 40) }}
                 </option>
                 @endforeach
             </select>
         </div>
         @endif
 
-        {{-- Année budgétaire --}}
         @if($annees->isNotEmpty())
         <div>
             <label class="block text-xs font-medium text-gray-500 mb-1">Année</label>
@@ -189,7 +202,7 @@
                             {{ $budget->libelleSource() }}
                         </span>
                     </td>
-                    <td class="px-4 py-3 text-gray-700">{{ $budget->libelle_ligne ?? '—' }}</td>
+                    <td class="px-4 py-3 text-gray-700">{{ $budget->libelle_ligne ?? '-' }}</td>
                     <td class="px-4 py-3">
                         @if($budget->actionPrioritaire)
                         <span class="font-mono text-xs text-indigo-600">{{ $budget->actionPrioritaire->code }}</span>
@@ -246,7 +259,7 @@
                     <td class="px-4 py-3" colspan="4">
                         TOTAL
                         @if(request()->anyFilled(['source_financement', 'action_prioritaire_id', 'annee_budgetaire']))
-                        <span class="text-xs font-normal text-blue-500">(filtré — {{ $budgets->count() }} ligne(s))</span>
+                        <span class="text-xs font-normal text-blue-500">(filtré - {{ $budgets->count() }} ligne(s))</span>
                         @else
                         <span class="text-xs font-normal text-blue-500">{{ $budgets->count() }} ligne(s)</span>
                         @endif

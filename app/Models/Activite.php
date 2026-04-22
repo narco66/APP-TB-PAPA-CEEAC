@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\AppliesVisibilityScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,6 +15,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 class Activite extends Model
 {
     use HasFactory;
+    use AppliesVisibilityScope;
     use SoftDeletes, LogsActivity;
 
     protected $table = 'activites';
@@ -185,16 +187,50 @@ class Activite extends Model
         };
     }
 
-    // Données pour Gantt
+    /**
+     * Transforme l'activité en tâche dhtmlx Gantt.
+     * Utilisé par GanttDataService ; maintenu ici pour la compatibilité.
+     */
     public function toGanttTask(): array
     {
         return [
-            'id'       => $this->id,
-            'text'     => $this->libelle,
+            'id'         => $this->id,
+            'text'       => "[{$this->code}] {$this->libelle}",
             'start_date' => $this->date_debut_prevue?->format('d-m-Y'),
             'end_date'   => $this->date_fin_prevue?->format('d-m-Y'),
             'progress'   => (float) $this->taux_realisation / 100,
-            'color'      => $this->estEnRetard() ? '#ef4444' : '#6366f1',
+            'type'       => $this->est_jalon ? 'milestone' : 'task',
+            'color'      => $this->resolveGanttColor(),
+            'open'       => true,
+            'statut'     => $this->statut,
+            'priorite'   => $this->priorite,
+            'est_retard' => $this->estEnRetard(),
+            'responsable'=> $this->responsable?->name,
+            'url_detail' => route('activites.show', $this->id),
+        ];
+    }
+
+    private function resolveGanttColor(): string
+    {
+        return match(true) {
+            $this->statut === 'abandonnee'                         => '#9ca3af',
+            $this->statut === 'terminee'                           => '#22c55e',
+            $this->statut === 'suspendue'                          => '#f59e0b',
+            $this->estEnRetard() && $this->priorite === 'critique' => '#7f1d1d',
+            $this->estEnRetard()                                   => '#ef4444',
+            $this->priorite === 'critique'                         => '#dc2626',
+            $this->priorite === 'haute'                            => '#8b5cf6',
+            $this->statut === 'en_cours'                           => '#3b82f6',
+            default                                                => '#6366f1',
+        };
+    }
+
+    protected function visibilityScopeColumns(): array
+    {
+        return [
+            'departement' => null,
+            'direction' => 'direction_id',
+            'service' => 'service_id',
         ];
     }
 }

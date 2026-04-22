@@ -1,23 +1,27 @@
 @extends('layouts.app')
-@section('title', 'Activités')
-@section('page-title', 'Activités PAPA')
+@section('title', 'Activites')
+@section('page-title', 'Activites PAPA')
 
 @section('content')
 <div class="space-y-4">
-    <!-- Filtres -->
+    <div class="rounded-xl border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm text-indigo-800">
+        <span class="font-semibold">Perimetre de donnees :</span> {{ $scopeLabel }}
+    </div>
+
     <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
         <form method="GET" class="flex flex-wrap gap-3 items-end">
             <div>
                 <label class="block text-xs text-gray-500 mb-1">Statut</label>
                 <select name="statut" class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm">
                     <option value="">Tous</option>
-                    @foreach(['non_demarree' => 'Non démarrée', 'planifiee' => 'Planifiée', 'en_cours' => 'En cours', 'suspendue' => 'Suspendue', 'terminee' => 'Terminée', 'abandonnee' => 'Abandonnée'] as $val => $label)
+                    @foreach(['non_demarree' => 'Non demarree', 'planifiee' => 'Planifiee', 'en_cours' => 'En cours', 'suspendue' => 'Suspendue', 'terminee' => 'Terminee', 'abandonnee' => 'Abandonnee'] as $val => $label)
                     <option value="{{ $val }}" {{ request('statut') === $val ? 'selected' : '' }}>{{ $label }}</option>
                     @endforeach
                 </select>
             </div>
+
             <div>
-                <label class="block text-xs text-gray-500 mb-1">Priorité</label>
+                <label class="block text-xs text-gray-500 mb-1">Priorite</label>
                 <select name="priorite" class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm">
                     <option value="">Toutes</option>
                     @foreach(['critique', 'haute', 'normale', 'basse'] as $p)
@@ -25,6 +29,7 @@
                     @endforeach
                 </select>
             </div>
+
             @can('activite.voir_toutes_directions')
             <div>
                 <label class="block text-xs text-gray-500 mb-1">Direction</label>
@@ -38,6 +43,7 @@
                 </select>
             </div>
             @endcan
+
             <div class="flex items-center space-x-2">
                 <label class="flex items-center text-sm text-gray-600 cursor-pointer">
                     <input type="checkbox" name="en_retard" value="1" {{ request('en_retard') ? 'checked' : '' }}
@@ -45,28 +51,30 @@
                     En retard uniquement
                 </label>
             </div>
+
             <button type="submit" class="px-4 py-1.5 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700">
                 <i class="fas fa-filter mr-1"></i>Filtrer
             </button>
+
             <a href="{{ route('activites.gantt') }}" class="px-4 py-1.5 bg-gray-100 text-gray-600 rounded-lg text-sm hover:bg-gray-200">
                 <i class="fas fa-project-diagram mr-1"></i>Gantt
             </a>
+
             @can('activite.creer')
             <a href="{{ route('activites.create') }}" class="px-4 py-1.5 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 ml-auto">
-                <i class="fas fa-plus mr-1"></i>Nouvelle activité
+                <i class="fas fa-plus mr-1"></i>Nouvelle activite
             </a>
             @endcan
         </form>
     </div>
 
-    <!-- Tableau -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <table class="w-full text-sm">
             <thead class="bg-gray-50">
                 <tr>
-                    <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Code / Activité</th>
+                    <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Code / Activite</th>
                     <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Direction</th>
-                    <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Délai prévu</th>
+                    <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Delai prevu</th>
                     <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Avancement</th>
                     <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Statut</th>
                     <th class="px-4 py-3"></th>
@@ -82,7 +90,7 @@
                             {{ ucfirst($activite->priorite) }}
                         </span>
                         @if($activite->estEnRetard())
-                            <span class="ml-1 text-xs text-red-600 font-medium">⚠ Retard</span>
+                            <span class="ml-1 text-xs text-red-600 font-medium">Retard</span>
                         @endif
                     </td>
                     <td class="px-4 py-3 text-gray-600 text-xs">
@@ -96,7 +104,7 @@
                         <p>Du {{ $activite->date_debut_prevue->format('d/m/Y') }}</p>
                         <p>Au {{ $activite->date_fin_prevue?->format('d/m/Y') }}</p>
                         @else
-                        <span class="text-gray-300">Non planifié</span>
+                        <span class="text-gray-300">Non planifie</span>
                         @endif
                     </td>
                     <td class="px-4 py-3">
@@ -111,8 +119,7 @@
                         </div>
                     </td>
                     <td class="px-4 py-3">
-                        <span class="px-2 py-1 rounded-full text-xs font-medium
-                            bg-{{ $activite->couleurStatut() }}-100 text-{{ $activite->couleurStatut() }}-700">
+                        <span class="px-2 py-1 rounded-full text-xs font-medium bg-{{ $activite->couleurStatut() }}-100 text-{{ $activite->couleurStatut() }}-700">
                             {{ ucfirst(str_replace('_', ' ', $activite->statut)) }}
                         </span>
                     </td>
@@ -125,12 +132,13 @@
                 <tr>
                     <td colspan="6" class="px-4 py-12 text-center text-gray-400">
                         <i class="fas fa-tasks text-gray-200 text-4xl mb-3 block"></i>
-                        Aucune activité trouvée.
+                        Aucune activite trouvee.
                     </td>
                 </tr>
                 @endforelse
             </tbody>
         </table>
+
         <div class="p-4 border-t border-gray-100">
             {{ $activites->links() }}
         </div>

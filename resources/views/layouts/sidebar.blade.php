@@ -99,7 +99,12 @@
             @endcan
 
             @canany(['budget.voir', 'risque.voir'])
-            @php $papaCourant = \App\Models\Papa::where('statut','valide')->latest('annee')->first() ?? \App\Models\Papa::latest('annee')->first(); @endphp
+            @php
+                $papaCourant = auth()->user()
+                    ? (\App\Models\Papa::query()->visibleTo(auth()->user())->where('statut', 'valide')->latest('annee')->first()
+                        ?? \App\Models\Papa::query()->visibleTo(auth()->user())->latest('annee')->first())
+                    : null;
+            @endphp
             @if($papaCourant)
                 @can('budget.voir')
                 <a href="{{ route('budgets.index', $papaCourant) }}"

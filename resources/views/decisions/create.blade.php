@@ -1,19 +1,23 @@
 @extends('layouts.app')
 
-@section('title', 'Nouvelle décision')
+@section('title', 'Nouvelle dÃ©cision')
 
 @section('breadcrumbs')
     <li>/</li>
-    <li><a href="{{ route('decisions.index') }}" class="hover:text-indigo-600">Décisions</a></li>
+    <li><a href="{{ route('decisions.index') }}" class="hover:text-indigo-600">DÃ©cisions</a></li>
     <li>/</li>
-    <li class="text-gray-700">Créer</li>
+    <li class="text-gray-700">CrÃ©er</li>
 @endsection
 
 @section('content')
 <div class="mx-auto max-w-4xl space-y-6">
     <div>
-        <h1 class="text-2xl font-bold text-gray-900">Nouvelle décision</h1>
-        <p class="text-sm text-gray-500">Créez une décision institutionnelle traçable et rattachée à un périmètre métier.</p>
+        <h1 class="text-2xl font-bold text-gray-900">Nouvelle dÃ©cision</h1>
+        <p class="text-sm text-gray-500">CrÃ©ez une dÃ©cision institutionnelle traÃ§able et rattachÃ©e Ã  un pÃ©rimÃ¨tre mÃ©tier.</p>
+    </div>
+
+    <div class="rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-800">
+        <span class="font-semibold">Perimetre de donnees :</span> {{ $scopeLabel }}
     </div>
 
     <form method="POST" action="{{ route('decisions.store') }}" class="space-y-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
@@ -71,7 +75,7 @@
 
         <div class="grid gap-4 md:grid-cols-3">
             <div>
-                <label for="impact_budgetaire" class="mb-2 block text-sm font-medium text-gray-700">Impact budgétaire</label>
+                <label for="impact_budgetaire" class="mb-2 block text-sm font-medium text-gray-700">Impact budgÃ©taire</label>
                 <input id="impact_budgetaire" name="impact_budgetaire" type="number" step="0.01" min="0" value="{{ old('impact_budgetaire') }}" class="w-full rounded-lg border-gray-300 text-sm">
             </div>
             <div>
@@ -88,7 +92,7 @@
 
         <div class="flex items-center justify-end gap-3">
             <a href="{{ route('decisions.index') }}" class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Annuler</a>
-            <button type="submit" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">Créer la décision</button>
+            <button type="submit" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">CrÃ©er la dÃ©cision</button>
         </div>
     </form>
 </div>

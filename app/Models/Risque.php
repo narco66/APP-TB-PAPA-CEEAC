@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Services\Security\UserScopeResolver;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -58,6 +60,26 @@ class Risque extends Model
     public function actionsCorrectives(): HasMany
     {
         return $this->hasMany(ActionCorrective::class);
+    }
+
+    public function scopeVisibleTo(Builder $query, User $user): Builder
+    {
+        $scope = app(UserScopeResolver::class)->resolve($user);
+
+        if ($scope->isGlobal) {
+            return $query;
+        }
+
+        return $query->where(function (Builder $risqueQuery) use ($user) {
+            $risqueQuery
+                ->whereHas('papa', fn (Builder $papaQuery) => $papaQuery->visibleTo($user))
+                ->orWhere('responsable_id', $user->id);
+        });
+    }
+
+    public function canBeAccessedBy(User $user): bool
+    {
+        return static::query()->whereKey($this->id)->visibleTo($user)->exists();
     }
 
     public function calculerScore(): int

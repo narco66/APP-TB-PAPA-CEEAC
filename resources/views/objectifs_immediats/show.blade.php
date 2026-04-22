@@ -1,6 +1,6 @@
 @extends('layouts.app')
 @section('title', $oi->code)
-@section('page-title', $oi->code . ' — ' . Str::limit($oi->libelle, 60))
+@section('page-title', $oi->code . ' - ' . Str::limit($oi->libelle, 60))
 
 @section('breadcrumbs')
     <li><i class="fas fa-chevron-right mx-2 text-xs"></i></li>
@@ -11,6 +11,10 @@
 
 @section('content')
 <div class="space-y-6" x-data="{ onglet: 'resultats' }">
+
+    <div class="rounded-xl border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm text-indigo-800">
+        <span class="font-semibold">Périmètre de données :</span> {{ $scopeLabel }}
+    </div>
 
     <!-- En-tête -->
     <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
@@ -53,8 +57,13 @@
             </div>
         </div>
 
-        @if($oi->actionPrioritaire?->estEditable())
         <div class="mt-4 flex flex-wrap gap-2">
+            <a href="{{ route('objectifs-immediats.print', $oi) }}"
+               target="_blank"
+               class="px-4 py-2 bg-white text-gray-700 rounded-lg text-sm border border-gray-200 hover:bg-gray-50 transition">
+                <i class="fas fa-print mr-1"></i>Version imprimable
+            </a>
+        @if($oi->actionPrioritaire?->estEditable())
             @can('papa.modifier')
             <a href="{{ route('objectifs-immediats.edit', $oi) }}"
                class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200 transition">
@@ -65,8 +74,8 @@
                 <i class="fas fa-plus mr-1"></i>Ajouter un résultat attendu
             </a>
             @endcan
-        </div>
         @endif
+        </div>
     </div>
 
     <!-- Onglets -->

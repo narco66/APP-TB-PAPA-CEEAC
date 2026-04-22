@@ -3,6 +3,9 @@
 
 @section('content')
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-6 rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-800">
+        <span class="font-semibold">Perimetre de donnees :</span> {{ $scopeLabel }}
+    </div>
 
     <nav class="text-xs text-gray-500 mb-6 flex items-center gap-1.5">
         <a href="{{ route('dashboard') }}" class="hover:underline">Dashboard</a>

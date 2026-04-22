@@ -9,6 +9,9 @@
 
 @section('content')
 <div class="space-y-6">
+    <div class="rounded-xl border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm text-indigo-800">
+        <span class="font-semibold">Perimetre de donnees :</span> {{ $scopeLabel }}
+    </div>
     <div class="flex items-center justify-between">
         <p class="text-sm text-gray-500">{{ $documents->total() }} document(s)</p>
         @can('document.deposer')

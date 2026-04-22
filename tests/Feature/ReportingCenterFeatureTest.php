@@ -23,6 +23,23 @@ class ReportingCenterFeatureTest extends TestCase
 
     private User $user;
 
+    private function rattacherUtilisateurEtPapaAuMemePerimetre(\App\Models\Papa $papa): void
+    {
+        $departement = Departement::factory()->create();
+        $direction = Direction::factory()->create(['departement_id' => $departement->id]);
+
+        $this->user->update([
+            'departement_id' => $departement->id,
+            'direction_id' => $direction->id,
+            'scope_level' => 'direction',
+        ]);
+
+        \App\Models\ActionPrioritaire::factory()->create([
+            'papa_id' => $papa->id,
+            'departement_id' => $departement->id,
+        ]);
+    }
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -65,6 +82,7 @@ class ReportingCenterFeatureTest extends TestCase
             ->get(route('reports.dashboard'))
             ->assertOk()
             ->assertSee('Centre de reporting')
+            ->assertSee('Perimetre de donnees')
             ->assertSee('Rapport executif global du PAPA');
     }
 
@@ -113,6 +131,46 @@ class ReportingCenterFeatureTest extends TestCase
             ->assertSee('Rapport narratif visible dashboard')
             ->assertDontSee('Rapport narratif hors perimetre dashboard')
             ->assertSee(route('rapports.index'), false);
+    }
+
+    public function test_reporting_dashboard_ne_propose_que_les_papas_du_perimetre(): void
+    {
+        ReportDefinition::create([
+            'code' => 'financial_global_papa',
+            'libelle' => 'Rapport budgetaire global du PAPA',
+            'categorie' => 'Financier',
+            'formats' => ['pdf', 'xlsx', 'csv'],
+            'actif' => true,
+        ]);
+
+        $departementVisible = Departement::factory()->create();
+        $departementMasque = Departement::factory()->create();
+        $directionVisible = Direction::factory()->create(['departement_id' => $departementVisible->id]);
+        $directionMasquee = Direction::factory()->create(['departement_id' => $departementMasque->id]);
+
+        $this->user->update([
+            'departement_id' => $departementVisible->id,
+            'direction_id' => $directionVisible->id,
+            'scope_level' => 'direction',
+        ]);
+
+        $papaVisible = \App\Models\Papa::factory()->create(['code' => 'PAPA-VISIBLE']);
+        $papaMasque = \App\Models\Papa::factory()->create(['code' => 'PAPA-MASQUE']);
+
+        \App\Models\ActionPrioritaire::factory()->create([
+            'papa_id' => $papaVisible->id,
+            'departement_id' => $departementVisible->id,
+        ]);
+        \App\Models\ActionPrioritaire::factory()->create([
+            'papa_id' => $papaMasque->id,
+            'departement_id' => $departementMasque->id,
+        ]);
+
+        $this->actingAs($this->user)
+            ->get(route('reports.dashboard'))
+            ->assertOk()
+            ->assertSee('PAPA-VISIBLE')
+            ->assertDontSee('PAPA-MASQUE');
     }
 
     public function test_reporting_library_download_journalise_le_telechargement(): void
@@ -165,6 +223,7 @@ class ReportingCenterFeatureTest extends TestCase
         ]);
 
         $papa = \App\Models\Papa::factory()->create();
+        $this->rattacherUtilisateurEtPapaAuMemePerimetre($papa);
 
         $this->actingAs($this->user)
             ->post(route('reports.generate', $definition), [
@@ -183,6 +242,46 @@ class ReportingCenterFeatureTest extends TestCase
             'format' => 'csv',
             'statut' => 'generated',
         ]);
+        $this->assertDatabaseHas('generated_reports', [
+            'report_definition_id' => $definition->id,
+            'scope_label' => $this->user->scopeLabel(),
+        ]);
+    }
+
+    public function test_reporting_generation_refuse_un_papa_hors_perimetre(): void
+    {
+        Storage::fake('local');
+
+        $definition = ReportDefinition::create([
+            'code' => 'financial_global_papa',
+            'libelle' => 'Rapport budgetaire global du PAPA',
+            'categorie' => 'Financier',
+            'formats' => ['pdf', 'xlsx', 'csv'],
+            'actif' => true,
+        ]);
+
+        $departementVisible = Departement::factory()->create();
+        $departementMasque = Departement::factory()->create();
+        $directionVisible = Direction::factory()->create(['departement_id' => $departementVisible->id]);
+
+        $this->user->update([
+            'departement_id' => $departementVisible->id,
+            'direction_id' => $directionVisible->id,
+            'scope_level' => 'direction',
+        ]);
+
+        $papaMasque = \App\Models\Papa::factory()->create();
+        \App\Models\ActionPrioritaire::factory()->create([
+            'papa_id' => $papaMasque->id,
+            'departement_id' => $departementMasque->id,
+        ]);
+
+        $this->actingAs($this->user)
+            ->post(route('reports.generate', $definition), [
+                'papa_id' => $papaMasque->id,
+                'format' => 'csv',
+            ])
+            ->assertForbidden();
     }
 
     public function test_reporting_dashboard_peut_generer_un_rapport_decisions(): void
@@ -198,6 +297,7 @@ class ReportingCenterFeatureTest extends TestCase
         ]);
 
         $papa = \App\Models\Papa::factory()->create();
+        $this->rattacherUtilisateurEtPapaAuMemePerimetre($papa);
         Decision::create([
             'reference' => 'DEC-001',
             'titre' => 'Arbitrage budgetaire',
@@ -238,6 +338,7 @@ class ReportingCenterFeatureTest extends TestCase
         ]);
 
         $papa = \App\Models\Papa::factory()->create();
+        $this->rattacherUtilisateurEtPapaAuMemePerimetre($papa);
         $action = \App\Models\ActionPrioritaire::factory()->create(['papa_id' => $papa->id]);
         $objectif = \App\Models\ObjectifImmediats::factory()->create(['action_prioritaire_id' => $action->id]);
         $resultat = \App\Models\ResultatAttendu::factory()->create(['objectif_immediat_id' => $objectif->id]);
@@ -292,6 +393,7 @@ class ReportingCenterFeatureTest extends TestCase
         ]);
 
         $papa = \App\Models\Papa::factory()->create();
+        $this->rattacherUtilisateurEtPapaAuMemePerimetre($papa);
 
         $this->actingAs($this->user)
             ->post(route('reports.generate', $definition), [
@@ -360,6 +462,7 @@ class ReportingCenterFeatureTest extends TestCase
         ]);
 
         $papa = \App\Models\Papa::factory()->create();
+        $this->rattacherUtilisateurEtPapaAuMemePerimetre($papa);
 
         $this->actingAs($this->user)
             ->post(route('reports.generate', $definition), [

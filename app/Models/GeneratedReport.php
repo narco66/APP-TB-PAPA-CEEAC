@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -25,6 +26,8 @@ class GeneratedReport extends Model
         'file_size',
         'filters',
         'contexte',
+        'scope_snapshot',
+        'scope_label',
         'generated_at',
         'expires_at',
         'failed_at',
@@ -46,6 +49,7 @@ class GeneratedReport extends Model
         return [
             'filters' => 'array',
             'contexte' => 'array',
+            'scope_snapshot' => 'array',
             'generated_at' => 'datetime',
             'expires_at' => 'datetime',
             'failed_at' => 'datetime',
@@ -112,5 +116,10 @@ class GeneratedReport extends Model
         }
 
         return route('reports.library.download', $this);
+    }
+
+    public function scopeVisibleTo(Builder $query, User $user): Builder
+    {
+        return $query->where('user_id', $user->id);
     }
 }

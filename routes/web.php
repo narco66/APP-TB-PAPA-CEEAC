@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ImportController;
 use App\Http\Controllers\ActionPrioritaireController;
 use App\Http\Controllers\StructureController;
 use App\Http\Controllers\ActiviteController;
@@ -26,6 +27,7 @@ use App\Http\Controllers\PapaController;
 use App\Http\Controllers\GeneratedReportController;
 use App\Http\Controllers\ReportDashboardController;
 use App\Http\Controllers\RapportController;
+use App\Http\Controllers\GanttController;
 use App\Http\Controllers\ReferentielController;
 use App\Http\Controllers\ResultatAttenduController;
 use App\Http\Controllers\RisqueController;
@@ -33,6 +35,7 @@ use App\Http\Controllers\WorkflowController;
 use App\Http\Controllers\Website\PageController;
 use App\Models\Direction;
 use App\Models\Papa;
+use App\Models\Service;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
@@ -81,8 +84,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/notifications/{notification}/read', [NotificationController::class, 'read'])->name('notifications.read');
 
     // â”€â”€ PAPA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    Route::get('papas/imprimer', [PapaController::class, 'print'])->name('papas.print');
     Route::resource('papas', PapaController::class);
     Route::prefix('papas/{papa}')->name('papas.')->group(function () {
+        Route::get('imprimer', [PapaController::class, 'printShow'])->name('print-show');
         Route::get('audit', [PapaController::class, 'audit'])->name('audit');
         Route::post('soumettre', [PapaController::class, 'soumettre'])->name('soumettre');
         Route::post('valider',   [PapaController::class, 'valider'])->name('valider');
@@ -93,20 +98,30 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // â”€â”€ ChaÃ®ne hiÃ©rarchique PAPA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    Route::get('actions-prioritaires/imprimer', [ActionPrioritaireController::class, 'printIndex'])->name('actions-prioritaires.print-index');
     Route::resource('actions-prioritaires', ActionPrioritaireController::class);
+    Route::get('actions-prioritaires/{actionsPrioritaire}/imprimer', [ActionPrioritaireController::class, 'print'])->name('actions-prioritaires.print');
     Route::resource('objectifs-immediats',  ObjectifImmediatsController::class)
         ->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
+    Route::get('objectifs-immediats/{objectifsImmediat}/imprimer', [ObjectifImmediatsController::class, 'print'])->name('objectifs-immediats.print');
     Route::resource('resultats-attendus',   ResultatAttenduController::class)
         ->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
+    Route::get('resultats-attendus/{resultatsAttendu}/imprimer', [ResultatAttenduController::class, 'print'])->name('resultats-attendus.print');
 
     // â”€â”€ ActivitÃ©s â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     Route::resource('activites', ActiviteController::class);
-    Route::get('activites-gantt', [ActiviteController::class, 'gantt'])->name('activites.gantt');
+    Route::get('activites/{activite}/imprimer', [ActiviteController::class, 'print'])->name('activites.print');
+    Route::get('activites-gantt',                [GanttController::class, 'index'])->name('activites.gantt');
+    Route::get('activites-gantt/data',          [GanttController::class, 'data'])->name('gantt.data');
+    Route::get('activites-gantt/detail/{id}',   [GanttController::class, 'detail'])->name('gantt.detail');
+    Route::get('activites-gantt/export/excel',  [GanttController::class, 'exportExcel'])->name('gantt.export.excel');
+    Route::get('activites-gantt/export/pdf',    [GanttController::class, 'exportPdf'])->name('gantt.export.pdf');
     Route::post('activites/{activite}/avancement', [ActiviteController::class, 'mettreAJourAvancement'])
         ->name('activites.avancement');
 
     // â”€â”€ Indicateurs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     Route::resource('indicateurs', IndicateurController::class);
+    Route::get('indicateurs/{indicateur}/imprimer', [IndicateurController::class, 'print'])->name('indicateurs.print');
     Route::post('indicateurs/{indicateur}/valeurs', [IndicateurController::class, 'saisirValeur'])
         ->name('indicateurs.saisir-valeur');
     Route::post('indicateurs/valeurs/{valeur}/valider', [IndicateurController::class, 'validerValeur'])
@@ -124,17 +139,46 @@ Route::middleware(['auth'])->group(function () {
         ->name('documents.archiver');
 
     // â”€â”€ API interne (JSON) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    Route::get('/api/directions/{direction}/services', function (Direction $direction) {
-        return $direction->services()->actif()->orderBy('libelle')->get(['id', 'libelle']);
+    Route::get('/api/directions/{direction}/services', function (Direction $direction, \Illuminate\Http\Request $request) {
+        $resolver = app(\App\Services\Security\UserScopeResolver::class);
+
+        abort_unless(
+            $resolver->canAccessAttributes(
+                $request->user(),
+                departementId: $direction->departement_id,
+                directionId: $direction->id,
+            ),
+            403
+        );
+
+        $services = app(\App\Services\Security\UserScopeResolver::class)
+            ->applyToQuery(Service::query()->actif()->where('direction_id', $direction->id)->orderBy('libelle'), $request->user(), [
+                'departement' => null,
+                'direction' => 'direction_id',
+                'service' => 'id',
+            ])
+            ->get(['id', 'libelle']);
+
+        abort_if($services->isEmpty(), 403);
+
+        return $services;
     })->name('api.direction.services');
 
-    Route::get('/api/papa/{papa}/actions-prioritaires', function (\App\Models\Papa $papa) {
-        return $papa->actionsPrioritaires()->orderBy('ordre')->get(['id', 'code', 'libelle']);
+    Route::get('/api/papa/{papa}/actions-prioritaires', function (\App\Models\Papa $papa, \Illuminate\Http\Request $request) {
+        abort_unless(\App\Models\Papa::query()->visibleTo($request->user())->whereKey($papa->id)->exists(), 403);
+
+        return $papa->actionsPrioritaires()
+            ->visibleTo($request->user())
+            ->orderBy('ordre')
+            ->get(['id', 'code', 'libelle']);
     })->name('api.papa.actions-prioritaires');
 
-    Route::get('/api/papa/{papa}/objectifs-immediats', function (\App\Models\Papa $papa) {
-        return \App\Models\ObjectifImmediats::whereHas('actionPrioritaire', fn($q) => $q->where('papa_id', $papa->id))
-            ->orderBy('code')->get(['id', 'code', 'libelle']);
+    Route::get('/api/papa/{papa}/objectifs-immediats', function (\App\Models\Papa $papa, \Illuminate\Http\Request $request) {
+        abort_unless(\App\Models\Papa::query()->visibleTo($request->user())->whereKey($papa->id)->exists(), 403);
+
+        return \App\Models\ObjectifImmediats::whereHas('actionPrioritaire', fn($q) => $q->where('papa_id', $papa->id)->visibleTo($request->user()))
+            ->orderBy('code')
+            ->get(['id', 'code', 'libelle']);
     })->name('api.papa.objectifs-immediats');
 
     // â”€â”€ Alertes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -182,6 +226,7 @@ Route::middleware(['auth'])->group(function () {
     // â”€â”€ Budget â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     Route::prefix('papas/{papa}')->name('budgets.')->group(function () {
         Route::get('budget',              [BudgetController::class, 'index'])->name('index');
+        Route::get('budget/imprimer',     [BudgetController::class, 'print'])->name('print');
         Route::get('budget/create',       [BudgetController::class, 'create'])->name('create');
         Route::post('budget',             [BudgetController::class, 'store'])->name('store');
         Route::get('budget/{budget}/edit',[BudgetController::class, 'edit'])->name('edit');
@@ -192,6 +237,7 @@ Route::middleware(['auth'])->group(function () {
     // â”€â”€ Risques â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     Route::prefix('papas/{papa}')->name('risques.')->group(function () {
         Route::get('risques',              [RisqueController::class, 'index'])->name('index');
+        Route::get('risques/imprimer',     [RisqueController::class, 'print'])->name('print');
         Route::get('risques/create',       [RisqueController::class, 'create'])->name('create');
         Route::post('risques',             [RisqueController::class, 'store'])->name('store');
         Route::get('risques/{risque}/edit',[RisqueController::class, 'edit'])->name('edit');
@@ -322,4 +368,12 @@ Route::middleware(['auth'])->group(function () {
             Route::post('importer',             [ParametreSauvegardeController::class, 'importer'])->name('importer');
         });
     });
+});
+
+// ── Import RBM ────────────────────────────────────────────────────────────────
+Route::middleware(['auth', 'verified'])->prefix('import/rbm')->name('import.rbm.')->group(function () {
+    Route::get('/',          [ImportController::class, 'index'])->name('index');
+    Route::get('/modele',    [ImportController::class, 'telechargerModele'])->name('modele');
+    Route::post('/valider',  [ImportController::class, 'valider'])->name('valider');
+    Route::post('/executer', [ImportController::class, 'executer'])->name('executer');
 });

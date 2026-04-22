@@ -1,6 +1,6 @@
 @extends('layouts.app')
-@section('title', 'Modifier — ' . $oi->code)
-@section('page-title', 'Modifier l\'objectif immédiat')
+@section('title', 'Modifier â€” ' . $oi->code)
+@section('page-title', 'Modifier l\'objectif immÃ©diat')
 
 @section('breadcrumbs')
     <li><i class="fas fa-chevron-right mx-2 text-xs"></i></li>
@@ -11,6 +11,9 @@
 
 @section('content')
 <div class="max-w-3xl">
+    <div class="mb-4 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-800">
+        <span class="font-semibold">Perimetre de donnees :</span> {{ $scopeLabel }}
+    </div>
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
 
         <div class="flex items-center gap-3 mb-6">
@@ -23,7 +26,7 @@
             @method('PUT')
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Libellé <span class="text-red-500">*</span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">LibellÃ© <span class="text-red-500">*</span></label>
                 <input type="text" name="libelle" value="{{ old('libelle', $oi->libelle) }}"
                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 @error('libelle') border-red-500 @enderror">
                 @error('libelle')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
@@ -40,7 +43,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Statut <span class="text-red-500">*</span></label>
                     <select name="statut"
                             class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500">
-                        @foreach(['planifie' => 'Planifié', 'en_cours' => 'En cours', 'atteint' => 'Atteint', 'partiellement_atteint' => 'Partiellement atteint', 'non_atteint' => 'Non atteint'] as $v => $l)
+                        @foreach(['planifie' => 'PlanifiÃ©', 'en_cours' => 'En cours', 'atteint' => 'Atteint', 'partiellement_atteint' => 'Partiellement atteint', 'non_atteint' => 'Non atteint'] as $v => $l)
                         <option value="{{ $v }}" {{ old('statut', $oi->statut) === $v ? 'selected' : '' }}>{{ $l }}</option>
                         @endforeach
                     </select>
@@ -49,7 +52,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Responsable</label>
                     <select name="responsable_id"
                             class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500">
-                        <option value="">-- Non assigné --</option>
+                        <option value="">-- Non assignÃ© --</option>
                         @foreach($users as $u)
                         <option value="{{ $u->id }}"
                                 {{ old('responsable_id', $oi->responsable_id) == $u->id ? 'selected' : '' }}>

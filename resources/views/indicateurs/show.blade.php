@@ -1,6 +1,6 @@
 @extends('layouts.app')
 @section('title', $indicateur->code)
-@section('page-title', $indicateur->code . ' — ' . Str::limit($indicateur->libelle, 60))
+@section('page-title', $indicateur->code . ' - ' . Str::limit($indicateur->libelle, 60))
 
 @section('breadcrumbs')
     <li><i class="fas fa-chevron-right mx-2 text-xs"></i></li>
@@ -9,10 +9,16 @@
     <li class="text-gray-700 font-medium">{{ $indicateur->code }}</li>
 @endsection
 
+@push('apexcharts')
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+@endpush
 @section('content')
 <div class="space-y-6" x-data="{ onglet: 'suivi' }">
 
-    <!-- En-tête -->
+    <div class="rounded-xl border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm text-indigo-800">
+        <span class="font-semibold">Perimetre de donnees :</span> {{ $scopeLabel }}
+    </div>
+
     <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
         <div class="flex items-start justify-between flex-wrap gap-4">
             <div class="flex-1">
@@ -20,7 +26,12 @@
                     <span class="font-mono text-xs bg-gray-100 px-2 py-0.5 rounded">{{ $indicateur->code }}</span>
                     @php
                         $niveau = $indicateur->niveauAlerte();
-                        $niveauColors = ['rouge' => ['bg' => 'bg-red-100', 'text' => 'text-red-700'], 'orange' => ['bg' => 'bg-orange-100', 'text' => 'text-orange-700'], 'vert' => ['bg' => 'bg-green-100', 'text' => 'text-green-700'], 'neutre' => ['bg' => 'bg-gray-100', 'text' => 'text-gray-600']];
+                        $niveauColors = [
+                            'rouge' => ['bg' => 'bg-red-100', 'text' => 'text-red-700'],
+                            'orange' => ['bg' => 'bg-orange-100', 'text' => 'text-orange-700'],
+                            'vert' => ['bg' => 'bg-green-100', 'text' => 'text-green-700'],
+                            'neutre' => ['bg' => 'bg-gray-100', 'text' => 'text-gray-600'],
+                        ];
                         $nc = $niveauColors[$niveau];
                     @endphp
                     <span class="px-2 py-0.5 rounded-full text-xs font-medium {{ $nc['bg'] }} {{ $nc['text'] }}">
@@ -33,16 +44,18 @@
                         {{ $indicateur->iconesTendance() }}
                     </span>
                 </div>
+
                 <h1 class="text-lg font-bold text-gray-800">{{ $indicateur->libelle }}</h1>
                 @if($indicateur->definition)
                 <p class="text-sm text-gray-500 mt-1">{{ $indicateur->definition }}</p>
                 @endif
+
                 <div class="flex flex-wrap gap-4 text-xs text-gray-500 mt-2">
-                    <span><i class="fas fa-building mr-1"></i>{{ $indicateur->direction?->libelle ?? '—' }}</span>
-                    <span><i class="fas fa-user mr-1"></i>{{ $indicateur->responsable?->nomComplet() ?? '—' }}</span>
-                    <span><i class="fas fa-sync mr-1"></i>{{ ucfirst($indicateur->frequence_collecte ?? '—') }}</span>
+                    <span><i class="fas fa-building mr-1"></i>{{ $indicateur->direction?->libelle ?? '-' }}</span>
+                    <span><i class="fas fa-user mr-1"></i>{{ $indicateur->responsable?->nomComplet() ?? '-' }}</span>
+                    <span><i class="fas fa-sync mr-1"></i>{{ ucfirst($indicateur->frequence_collecte ?? '-') }}</span>
                     @if($indicateur->unite_mesure)
-                    <span><i class="fas fa-ruler mr-1"></i>Unité : {{ $indicateur->unite_mesure }}</span>
+                    <span><i class="fas fa-ruler mr-1"></i>Unite : {{ $indicateur->unite_mesure }}</span>
                     @endif
                 </div>
             </div>
@@ -55,7 +68,7 @@
                     @else text-indigo-700 @endif">
                     {{ number_format($indicateur->taux_realisation_courant, 0) }}%
                 </div>
-                <p class="text-xs text-gray-400">de réalisation</p>
+                <p class="text-xs text-gray-400">de realisation</p>
                 <p class="text-xs text-gray-400 mt-1">
                     Cible : <strong>{{ number_format($indicateur->valeur_cible_annuelle, 0) }} {{ $indicateur->unite_mesure }}</strong>
                 </p>
@@ -65,7 +78,6 @@
             </div>
         </div>
 
-        <!-- Barre de réalisation + seuils -->
         <div class="mt-4">
             <div class="relative h-4 bg-gray-100 rounded-full overflow-visible">
                 <div class="h-full rounded-full transition-all"
@@ -90,15 +102,19 @@
             </div>
             <div class="flex justify-between text-xs text-gray-400 mt-1">
                 <span>0%</span>
-                @if($indicateur->seuil_alerte_rouge) <span class="text-red-500">⬆ {{ $indicateur->seuil_alerte_rouge }}%</span> @endif
-                @if($indicateur->seuil_alerte_orange) <span class="text-orange-500">⬆ {{ $indicateur->seuil_alerte_orange }}%</span> @endif
-                @if($indicateur->seuil_alerte_vert) <span class="text-green-500">⬆ {{ $indicateur->seuil_alerte_vert }}%</span> @endif
+                @if($indicateur->seuil_alerte_rouge) <span class="text-red-500">| {{ $indicateur->seuil_alerte_rouge }}%</span> @endif
+                @if($indicateur->seuil_alerte_orange) <span class="text-orange-500">| {{ $indicateur->seuil_alerte_orange }}%</span> @endif
+                @if($indicateur->seuil_alerte_vert) <span class="text-green-500">| {{ $indicateur->seuil_alerte_vert }}%</span> @endif
                 <span>100%</span>
             </div>
         </div>
 
-        <!-- Actions -->
         <div class="mt-4 flex flex-wrap gap-2">
+            <a href="{{ route('indicateurs.print', $indicateur) }}"
+               target="_blank"
+               class="px-4 py-2 bg-white text-gray-700 rounded-lg text-sm border border-gray-200 hover:bg-gray-50 transition">
+                <i class="fas fa-print mr-1"></i>Version imprimable
+            </a>
             @can('modifier', $indicateur)
             <a href="{{ route('indicateurs.edit', $indicateur) }}"
                class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200 transition">
@@ -114,31 +130,27 @@
         </div>
     </div>
 
-    <!-- Onglets -->
     <div class="flex space-x-1 bg-white rounded-xl p-1 shadow-sm border border-gray-100">
-        @foreach(['suivi' => 'Suivi (' . $indicateur->valeurs->count() . ')', 'definition' => 'Définition', 'seuils' => 'Seuils & Alertes'] as $key => $label)
+        @foreach(['suivi' => 'Suivi (' . $indicateur->valeurs->count() . ')', 'definition' => 'Definition', 'seuils' => 'Seuils & Alertes'] as $key => $label)
         <button @click="onglet = '{{ $key }}'"
                 :class="onglet === '{{ $key }}' ? 'bg-indigo-600 text-white shadow' : 'text-gray-500 hover:text-gray-700'"
                 class="flex-1 px-3 py-2 rounded-lg text-xs font-medium transition">{{ $label }}</button>
         @endforeach
     </div>
 
-    <!-- Suivi des valeurs -->
     <div x-show="onglet === 'suivi'" class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <!-- Graphique -->
         @if($indicateur->valeurs->count() > 0)
         <div class="p-5 border-b border-gray-100">
             <div id="chart-indicateur" style="min-height: 220px;"></div>
         </div>
         @endif
 
-        <!-- Tableau des valeurs -->
         <table class="w-full text-sm">
             <thead class="bg-gray-50">
                 <tr>
-                    <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500">Période</th>
+                    <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500">Periode</th>
                     <th class="text-right px-4 py-3 text-xs font-semibold text-gray-500">Cible</th>
-                    <th class="text-right px-4 py-3 text-xs font-semibold text-gray-500">Réalisé</th>
+                    <th class="text-right px-4 py-3 text-xs font-semibold text-gray-500">Realise</th>
                     <th class="text-right px-4 py-3 text-xs font-semibold text-gray-500">Taux</th>
                     <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500">Statut</th>
                     <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500">Saisi par</th>
@@ -152,13 +164,13 @@
                 <tr class="{{ $v->statut_validation === 'rejete' ? 'bg-red-50' : '' }}">
                     <td class="px-4 py-3">
                         <p class="font-medium text-gray-800">{{ $v->periode_libelle }}</p>
-                        <p class="text-xs text-gray-400">{{ $v->annee }} · {{ ucfirst($v->periode_type) }}</p>
+                        <p class="text-xs text-gray-400">{{ $v->annee }} • {{ ucfirst($v->periode_type) }}</p>
                     </td>
                     <td class="px-4 py-3 text-right text-gray-600">
-                        {{ $v->valeur_cible_periode ? number_format($v->valeur_cible_periode, 2) : '—' }}
+                        {{ $v->valeur_cible_periode ? number_format($v->valeur_cible_periode, 2) : '-' }}
                     </td>
                     <td class="px-4 py-3 text-right font-semibold text-gray-800">
-                        {{ $v->valeur_realisee !== null ? number_format($v->valeur_realisee, 2) : '—' }}
+                        {{ $v->valeur_realisee !== null ? number_format($v->valeur_realisee, 2) : '-' }}
                     </td>
                     <td class="px-4 py-3 text-right">
                         <span class="font-bold {{ $v->taux_realisation >= 75 ? 'text-green-600' : ($v->taux_realisation >= 50 ? 'text-orange-500' : 'text-red-600') }}">
@@ -172,7 +184,7 @@
                         </span>
                     </td>
                     <td class="px-4 py-3 text-xs text-gray-400">
-                        {{ $v->saisiPar?->nomComplet() ?? '—' }}<br>
+                        {{ $v->saisiPar?->nomComplet() ?? '-' }}<br>
                         {{ $v->created_at->format('d/m/Y') }}
                     </td>
                     @can('validerValeur', $indicateur)
@@ -212,35 +224,34 @@
         </table>
     </div>
 
-    <!-- Définition -->
     <div x-show="onglet === 'definition'" class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
         <div class="grid grid-cols-2 gap-6 text-sm">
             <div class="space-y-3">
                 <div>
-                    <p class="text-xs font-semibold text-gray-400 uppercase">Méthode de calcul</p>
-                    <p class="text-gray-700 mt-1">{{ $indicateur->methode_calcul ?: '—' }}</p>
+                    <p class="text-xs font-semibold text-gray-400 uppercase">Methode de calcul</p>
+                    <p class="text-gray-700 mt-1">{{ $indicateur->methode_calcul ?: '-' }}</p>
                 </div>
                 <div>
-                    <p class="text-xs font-semibold text-gray-400 uppercase">Source des données</p>
-                    <p class="text-gray-700 mt-1">{{ $indicateur->source_donnees ?: '—' }}</p>
+                    <p class="text-xs font-semibold text-gray-400 uppercase">Source des donnees</p>
+                    <p class="text-gray-700 mt-1">{{ $indicateur->source_donnees ?: '-' }}</p>
                 </div>
                 <div>
                     <p class="text-xs font-semibold text-gray-400 uppercase">Outil de collecte</p>
-                    <p class="text-gray-700 mt-1">{{ $indicateur->outil_collecte ?: '—' }}</p>
+                    <p class="text-gray-700 mt-1">{{ $indicateur->outil_collecte ?: '-' }}</p>
                 </div>
             </div>
             <div class="space-y-3">
                 <div>
                     <p class="text-xs font-semibold text-gray-400 uppercase">Valeur baseline</p>
-                    <p class="text-gray-700 mt-1">{{ $indicateur->valeur_baseline !== null ? number_format($indicateur->valeur_baseline, 2) . ' ' . $indicateur->unite_mesure : '—' }}</p>
+                    <p class="text-gray-700 mt-1">{{ $indicateur->valeur_baseline !== null ? number_format($indicateur->valeur_baseline, 2) . ' ' . $indicateur->unite_mesure : '-' }}</p>
                 </div>
                 <div>
                     <p class="text-xs font-semibold text-gray-400 uppercase">Cible annuelle</p>
                     <p class="text-gray-700 mt-1">{{ number_format($indicateur->valeur_cible_annuelle, 2) }} {{ $indicateur->unite_mesure }}</p>
                 </div>
                 <div>
-                    <p class="text-xs font-semibold text-gray-400 uppercase">Fréquence de collecte</p>
-                    <p class="text-gray-700 mt-1">{{ ucfirst($indicateur->frequence_collecte ?? '—') }}</p>
+                    <p class="text-xs font-semibold text-gray-400 uppercase">Frequence de collecte</p>
+                    <p class="text-gray-700 mt-1">{{ ucfirst($indicateur->frequence_collecte ?? '-') }}</p>
                 </div>
             </div>
         </div>
@@ -252,44 +263,42 @@
         @endif
     </div>
 
-    <!-- Seuils -->
     <div x-show="onglet === 'seuils'" class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-        <h3 class="font-semibold text-gray-700 mb-4">Seuils de déclenchement des alertes</h3>
+        <h3 class="font-semibold text-gray-700 mb-4">Seuils de declenchement des alertes</h3>
         <div class="grid grid-cols-3 gap-4">
             <div class="bg-red-50 border border-red-100 rounded-xl p-4 text-center">
                 <i class="fas fa-exclamation-circle text-red-500 text-2xl mb-2"></i>
                 <p class="text-xs text-gray-500 mb-1">Seuil rouge (critique)</p>
                 <p class="text-2xl font-bold text-red-600">
-                    {{ $indicateur->seuil_alerte_rouge ? $indicateur->seuil_alerte_rouge . '%' : '—' }}
+                    {{ $indicateur->seuil_alerte_rouge ? $indicateur->seuil_alerte_rouge . '%' : '-' }}
                 </p>
-                <p class="text-xs text-gray-400 mt-1">Alerte critique si ≤ ce seuil</p>
+                <p class="text-xs text-gray-400 mt-1">Alerte critique si <= ce seuil</p>
             </div>
             <div class="bg-orange-50 border border-orange-100 rounded-xl p-4 text-center">
                 <i class="fas fa-exclamation-triangle text-orange-500 text-2xl mb-2"></i>
                 <p class="text-xs text-gray-500 mb-1">Seuil orange (attention)</p>
                 <p class="text-2xl font-bold text-orange-500">
-                    {{ $indicateur->seuil_alerte_orange ? $indicateur->seuil_alerte_orange . '%' : '—' }}
+                    {{ $indicateur->seuil_alerte_orange ? $indicateur->seuil_alerte_orange . '%' : '-' }}
                 </p>
-                <p class="text-xs text-gray-400 mt-1">Alerte si ≤ ce seuil</p>
+                <p class="text-xs text-gray-400 mt-1">Alerte si <= ce seuil</p>
             </div>
             <div class="bg-green-50 border border-green-100 rounded-xl p-4 text-center">
                 <i class="fas fa-check-circle text-green-500 text-2xl mb-2"></i>
                 <p class="text-xs text-gray-500 mb-1">Seuil vert (bon)</p>
                 <p class="text-2xl font-bold text-green-600">
-                    {{ $indicateur->seuil_alerte_vert ? $indicateur->seuil_alerte_vert . '%' : '—' }}
+                    {{ $indicateur->seuil_alerte_vert ? $indicateur->seuil_alerte_vert . '%' : '-' }}
                 </p>
-                <p class="text-xs text-gray-400 mt-1">Performance satisfaisante si ≥</p>
+                <p class="text-xs text-gray-400 mt-1">Performance satisfaisante si >=</p>
             </div>
         </div>
         <div class="mt-4 p-3 bg-indigo-50 rounded-lg text-sm text-indigo-700">
             <strong>Niveau actuel :</strong> {{ ucfirst($niveau) }}
-            ({{ number_format($indicateur->taux_realisation_courant, 1) }}% de réalisation)
+            ({{ number_format($indicateur->taux_realisation_courant, 1) }}% de realisation)
         </div>
     </div>
 
 </div>
 
-<!-- Modal saisie valeur -->
 <div id="modal-valeur" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
     <div class="bg-white rounded-2xl p-6 w-full max-w-lg shadow-xl">
         <h3 class="text-lg font-bold text-gray-800 mb-4">Saisir une valeur</h3>
@@ -298,7 +307,7 @@
 
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Type de période <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Type de periode <span class="text-red-500">*</span></label>
                     <select name="periode_type" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                         <option value="mensuelle">Mensuelle</option>
                         <option value="trimestrielle" selected>Trimestrielle</option>
@@ -307,7 +316,7 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Année <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Annee <span class="text-red-500">*</span></label>
                     <input type="number" name="annee" value="{{ date('Y') }}"
                            min="2020" max="2050"
                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
@@ -316,14 +325,14 @@
 
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Libellé période <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Libelle periode <span class="text-red-500">*</span></label>
                     <input type="text" name="periode_libelle" placeholder="Ex : T1-2025, Janvier 2025"
                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Trimestre</label>
                     <select name="trimestre" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                        <option value="">—</option>
+                        <option value="">-</option>
                         @for($q = 1; $q <= 4; $q++)
                         <option value="{{ $q }}">T{{ $q }}</option>
                         @endfor
@@ -334,7 +343,7 @@
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">
-                        Cible période
+                        Cible periode
                         @if($indicateur->unite_mesure) <span class="text-gray-400">({{ $indicateur->unite_mesure }})</span> @endif
                     </label>
                     <input type="number" name="valeur_cible_periode" step="0.01"
@@ -342,7 +351,7 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">
-                        Valeur réalisée
+                        Valeur realisee
                         @if($indicateur->unite_mesure) <span class="text-gray-400">({{ $indicateur->unite_mesure }})</span> @endif
                     </label>
                     <input type="number" name="valeur_realisee" step="0.01"
@@ -377,7 +386,7 @@ const data = @json($valeursCourbes);
 new ApexCharts(document.querySelector('#chart-indicateur'), {
     chart: { type: 'line', height: 220, toolbar: { show: false } },
     series: [
-        { name: 'Réalisé', data: data.map(d => d.realise) },
+        { name: 'Realise', data: data.map(d => d.realise) },
         { name: 'Cible', data: data.map(d => d.cible) },
     ],
     xaxis: { categories: data.map(d => d.periode) },
@@ -386,7 +395,7 @@ new ApexCharts(document.querySelector('#chart-indicateur'), {
     markers: { size: 4 },
     legend: { position: 'top' },
     yaxis: { title: { text: '{{ $indicateur->unite_mesure }}' } },
-    tooltip: { y: { formatter: v => v !== null ? v.toFixed(2) + ' {{ $indicateur->unite_mesure }}' : '—' } },
+    tooltip: { y: { formatter: v => v !== null ? v.toFixed(2) + ' {{ $indicateur->unite_mesure }}' : '-' } },
 }).render();
 </script>
 @endif

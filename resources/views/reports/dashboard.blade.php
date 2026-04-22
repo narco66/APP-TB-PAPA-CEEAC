@@ -8,6 +8,9 @@
         <div>
             <h1 class="text-2xl font-bold text-gray-900">Centre de reporting</h1>
             <p class="text-sm text-gray-500 mt-1">Catalogue institutionnel des rapports, historique des exports et acces rapide aux modeles de reporting.</p>
+            <p class="mt-2 inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+                {{ $scopeLabel }}
+            </p>
         </div>
         <div class="flex items-center gap-3">
             @can('create', \App\Models\Rapport::class)
@@ -73,7 +76,7 @@
                                         <select name="papa_id" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm">
                                             <option value="">Selectionner un PAPA</option>
                                             @foreach($papas as $papa)
-                                                <option value="{{ $papa->id }}">{{ $papa->code }} · {{ $papa->libelle }}</option>
+                                                <option value="{{ $papa->id }}">{{ $papa->code }} Â· {{ $papa->libelle }}</option>
                                             @endforeach
                                         </select>
                                         <div class="flex items-center gap-2">
@@ -112,7 +115,7 @@
                         <p class="mt-1 text-xs text-gray-500">
                             {{ $report->definition?->libelle ?? 'Rapport libre' }}
                             @if($report->papa)
-                                · {{ $report->papa->code }}
+                                Â· {{ $report->papa->code }}
                             @endif
                         </p>
                         <div class="mt-3 flex items-center justify-between">
@@ -145,9 +148,9 @@
                         <p class="mt-1 text-xs text-gray-500">
                             {{ ucfirst($rapport->type_rapport) }}
                             @if($rapport->papa)
-                                · {{ $rapport->papa->code }}
+                                Â· {{ $rapport->papa->code }}
                             @endif
-                            · {{ $rapport->created_at->format('d/m/Y') }}
+                            Â· {{ $rapport->created_at->format('d/m/Y') }}
                         </p>
                     </div>
                     <div class="flex items-center gap-3">

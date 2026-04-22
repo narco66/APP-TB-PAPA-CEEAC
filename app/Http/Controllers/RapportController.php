@@ -98,7 +98,7 @@ class RapportController extends Controller
         $rapport->load(['papa.actionsPrioritaires.objectifsImmediat.resultatsAttendus.activites', 'direction', 'redigePar']);
 
         $papa = $rapport->papa;
-        $kpis = $this->dashboardService->kpisExecutif($papa);
+        $kpis = $this->dashboardService->kpisExecutif($papa, auth()->user());
 
         $pdf = Pdf::loadView('rapports.pdf', compact('rapport', 'papa', 'kpis'))
             ->setPaper('a4', 'portrait')
@@ -132,7 +132,7 @@ class RapportController extends Controller
         $this->authorize('voir', $papa);
 
         $papa->load(['actionsPrioritaires.objectifsImmediat.resultatsAttendus', 'budgets.partenaire']);
-        $kpis = $this->dashboardService->kpisExecutif($papa);
+        $kpis = $this->dashboardService->kpisExecutif($papa, auth()->user());
 
         $pdf = Pdf::loadView('rapports.papa_pdf', compact('papa', 'kpis'))
             ->setPaper('a4', 'landscape')

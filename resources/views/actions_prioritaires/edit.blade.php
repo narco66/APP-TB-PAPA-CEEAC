@@ -11,6 +11,10 @@
 
 @section('content')
 <div class="max-w-3xl">
+    <div class="mb-4 rounded-xl border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm text-indigo-800">
+        <span class="font-semibold">Perimetre de donnees :</span> {{ $scopeLabel }}
+    </div>
+
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
 
         <div class="flex items-center gap-3 mb-6">

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Decision;
+use App\Models\Departement;
 use App\Models\Document;
 use App\Models\Papa;
 use App\Models\User;
@@ -20,6 +21,7 @@ class WorkflowDecisionFeatureTest extends TestCase
     private User $sg;
     private User $createurDecision;
     private User $president;
+    private Departement $departementScope;
 
     protected function setUp(): void
     {
@@ -56,11 +58,23 @@ class WorkflowDecisionFeatureTest extends TestCase
 
         $this->president = User::factory()->create(['actif' => true]);
         $this->president->assignRole($rolePresident);
+
+        $this->departementScope = Departement::factory()->create();
+        foreach ([$this->initiateur, $this->sg, $this->createurDecision, $this->president] as $user) {
+            $user->update([
+                'departement_id' => $this->departementScope->id,
+                'scope_level' => 'departement',
+            ]);
+        }
     }
 
     public function test_workflow_papa_peut_etre_demarre_et_approuve_via_http(): void
     {
         $papa = Papa::factory()->create();
+        \App\Models\ActionPrioritaire::factory()->create([
+            'papa_id' => $papa->id,
+            'departement_id' => $this->departementScope->id,
+        ]);
 
         $definition = WorkflowDefinition::create([
             'code' => 'PAPA_VALIDATION_STANDARD',
@@ -123,7 +137,13 @@ class WorkflowDecisionFeatureTest extends TestCase
     public function test_decision_peut_etre_creee_documentee_validee_et_executee(): void
     {
         $papa = Papa::factory()->create();
-        $document = Document::factory()->create();
+        \App\Models\ActionPrioritaire::factory()->create([
+            'papa_id' => $papa->id,
+            'departement_id' => $this->departementScope->id,
+        ]);
+        $document = Document::factory()->create([
+            'depose_par' => $this->createurDecision->id,
+        ]);
 
         $this->actingAs($this->createurDecision)
             ->post(route('decisions.store'), [

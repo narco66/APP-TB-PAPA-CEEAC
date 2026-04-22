@@ -2,7 +2,11 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Activite;
+use App\Models\Papa;
+use App\Models\ResultatAttendu;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 class StoreDocumentRequest extends FormRequest
 {
@@ -34,5 +38,48 @@ class StoreDocumentRequest extends FormRequest
             'fichier.mimes'    => 'Format non autorisé. Formats acceptés : PDF, Word, Excel, PowerPoint, Images, ZIP.',
             'titre.required'   => 'Le titre du document est obligatoire.',
         ];
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator) {
+            if (! $this->filled('documentable_type') || ! $this->filled('documentable_id')) {
+                return;
+            }
+
+            $class = $this->input('documentable_type');
+            $id = (int) $this->input('documentable_id');
+            $allowed = [
+                Activite::class,
+                ResultatAttendu::class,
+                Papa::class,
+            ];
+
+            if (! in_array($class, $allowed, true) || ! class_exists($class)) {
+                $validator->errors()->add('documentable_type', 'Le type de rattachement est invalide.');
+                return;
+            }
+
+            $entity = $class::find($id);
+
+            if (! $entity) {
+                $validator->errors()->add('documentable_id', 'L entite selectionnee est introuvable.');
+                return;
+            }
+
+            $user = $this->user();
+
+            $allowedEntity = match ($class) {
+                Activite::class => $user->can('voir', $entity),
+                ResultatAttendu::class => $entity->activites()->visibleTo($user)->exists()
+                    || $entity->objectifImmediats?->actionPrioritaire?->canBeAccessedBy($user),
+                Papa::class => $entity->actionsPrioritaires()->visibleTo($user)->exists(),
+                default => false,
+            };
+
+            if (! $allowedEntity) {
+                $validator->errors()->add('documentable_id', 'L entite selectionnee est hors de votre perimetre autorise.');
+            }
+        });
     }
 }

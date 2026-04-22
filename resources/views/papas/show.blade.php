@@ -13,6 +13,20 @@
 @section('content')
 <div class="space-y-6">
 
+    <div class="rounded-xl border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm text-indigo-800">
+        <span class="font-semibold">Perimetre de donnees :</span> {{ $scopeLabel }}
+    </div>
+
+    <div class="flex justify-end">
+        <a href="{{ route('papas.print-show', $papa) }}"
+           target="_blank"
+           rel="noopener"
+           class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition shadow-sm">
+            <i class="fas fa-print"></i>
+            <span>Version imprimable</span>
+        </a>
+    </div>
+
     <!-- En-tête & Actions -->
     <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
         <div class="flex items-start justify-between flex-wrap gap-4">
@@ -36,6 +50,13 @@
 
             <!-- Actions -->
             <div class="flex flex-wrap gap-2">
+                <a href="{{ route('papas.print-show', $papa) }}"
+                   target="_blank"
+                   rel="noopener"
+                   class="px-4 py-2 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg text-sm font-medium transition">
+                    <i class="fas fa-print mr-1"></i>Version imprimable
+                </a>
+
                 @can('modifier', $papa)
                 <a href="{{ route('papas.edit', $papa) }}"
                    class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition">

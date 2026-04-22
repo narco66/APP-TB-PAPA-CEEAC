@@ -10,6 +10,10 @@
 @section('content')
 <div class="space-y-6">
 
+    <div class="rounded-xl border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm text-indigo-800">
+        <span class="font-semibold">Perimetre de donnees :</span> {{ $scopeLabel }}
+    </div>
+
     <div class="grid grid-cols-3 gap-4">
         <div class="bg-red-50 rounded-xl p-4 border border-red-100 text-center">
             <p class="text-3xl font-bold text-red-600">{{ $alertes->where('niveau', 'critique')->count() }}</p>

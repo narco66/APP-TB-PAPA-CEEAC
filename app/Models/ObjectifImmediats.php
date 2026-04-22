@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -57,6 +58,20 @@ class ObjectifImmediats extends Model
     public function indicateurs(): HasMany
     {
         return $this->hasMany(Indicateur::class, 'objectif_immediat_id');
+    }
+
+    public function scopeVisibleTo(Builder $query, User $user): Builder
+    {
+        if ($user->resolveVisibilityScope()->isGlobal) {
+            return $query;
+        }
+
+        return $query->whereHas('actionPrioritaire', fn (Builder $actionQuery) => $actionQuery->visibleTo($user));
+    }
+
+    public function canBeAccessedBy(User $user): bool
+    {
+        return static::query()->whereKey($this->id)->visibleTo($user)->exists();
     }
 
     // ─── Scopes ─────────────────────────────────────────────────

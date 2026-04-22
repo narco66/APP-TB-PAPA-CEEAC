@@ -9,6 +9,7 @@ use App\Models\NotificationRule;
 use App\Models\Papa;
 use App\Models\User;
 use App\Models\WorkflowInstance;
+use App\Services\Security\UserScopeResolver;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -22,9 +23,12 @@ class AdminController extends Controller
     {
         $this->authorize('admin.utilisateurs');
 
-        $query = User::with(['direction', 'roles'])
+        $query = $this->scopeUsers(
+            User::with(['departement', 'direction', 'service', 'roles'])
             ->withTrashed()
-            ->orderBy('name');
+            ->orderBy('name'),
+            $request
+        );
 
         if ($request->filled('search')) {
             $s = $request->search;
@@ -45,19 +49,27 @@ class AdminController extends Controller
 
         $users = $query->paginate(25);
         $roles = Role::orderBy('name')->get();
-        $directions = Direction::actif()->orderBy('libelle')->get(['id', 'code', 'libelle']);
+        $directions = $this->scopeDirections(
+            Direction::actif()->orderBy('libelle'),
+            $request
+        )->get(['id', 'code', 'libelle']);
+        $scopeLabel = $request->user()->scopeLabel();
 
-        return view('admin.utilisateurs.index', compact('users', 'roles', 'directions'));
+        return view('admin.utilisateurs.index', compact('users', 'roles', 'directions', 'scopeLabel'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $this->authorize('admin.utilisateurs');
 
         $roles = Role::orderBy('name')->get();
-        $directions = Direction::actif()->orderBy('libelle')->get(['id', 'code', 'libelle']);
+        $directions = $this->scopeDirections(
+            Direction::actif()->orderBy('libelle'),
+            $request
+        )->get(['id', 'code', 'libelle']);
+        $scopeLabel = $request->user()->scopeLabel();
 
-        return view('admin.utilisateurs.create', compact('roles', 'directions'));
+        return view('admin.utilisateurs.create', compact('roles', 'directions', 'scopeLabel'));
     }
 
     public function store(Request $request)
@@ -78,6 +90,18 @@ class AdminController extends Controller
             'role' => 'required|exists:roles,name',
         ]);
 
+        $direction = null;
+        $departementId = null;
+
+        if (! empty($data['direction_id'])) {
+            $direction = $this->scopeDirections(
+                Direction::query()->whereKey($data['direction_id']),
+                $request
+            )->firstOrFail();
+
+            $departementId = $direction->departement_id;
+        }
+
         $user = User::create([
             'name' => $data['name'],
             'prenom' => $data['prenom'] ?? null,
@@ -87,7 +111,10 @@ class AdminController extends Controller
             'titre' => $data['titre'] ?? null,
             'fonction' => $data['fonction'] ?? null,
             'telephone' => $data['telephone'] ?? null,
-            'direction_id' => $data['direction_id'] ?? null,
+            'departement_id' => $departementId,
+            'direction_id' => $direction?->id,
+            'service_id' => null,
+            'scope_level' => $direction ? 'direction' : null,
             'actif' => $data['actif'] ?? true,
         ]);
 
@@ -101,16 +128,22 @@ class AdminController extends Controller
     public function edit(User $user)
     {
         $this->authorize('admin.utilisateurs');
+        abort_unless($this->scopeUsers(User::query()->whereKey($user->id), request())->exists(), 403);
 
         $roles = Role::orderBy('name')->get();
-        $directions = Direction::actif()->orderBy('libelle')->get(['id', 'code', 'libelle']);
+        $directions = $this->scopeDirections(
+            Direction::actif()->orderBy('libelle'),
+            request()
+        )->get(['id', 'code', 'libelle']);
+        $scopeLabel = request()->user()->scopeLabel();
 
-        return view('admin.utilisateurs.edit', compact('user', 'roles', 'directions'));
+        return view('admin.utilisateurs.edit', compact('user', 'roles', 'directions', 'scopeLabel'));
     }
 
     public function update(Request $request, User $user)
     {
         $this->authorize('admin.utilisateurs');
+        abort_unless($this->scopeUsers(User::query()->whereKey($user->id), $request)->exists(), 403);
 
         $data = $request->validate([
             'name' => 'required|string|max:100',
@@ -126,6 +159,18 @@ class AdminController extends Controller
             'role' => 'required|exists:roles,name',
         ]);
 
+        $direction = null;
+        $departementId = null;
+
+        if (! empty($data['direction_id'])) {
+            $direction = $this->scopeDirections(
+                Direction::query()->whereKey($data['direction_id']),
+                $request
+            )->firstOrFail();
+
+            $departementId = $direction->departement_id;
+        }
+
         $updateData = [
             'name' => $data['name'],
             'prenom' => $data['prenom'] ?? null,
@@ -134,7 +179,10 @@ class AdminController extends Controller
             'titre' => $data['titre'] ?? null,
             'fonction' => $data['fonction'] ?? null,
             'telephone' => $data['telephone'] ?? null,
-            'direction_id' => $data['direction_id'] ?? null,
+            'departement_id' => $departementId,
+            'direction_id' => $direction?->id,
+            'service_id' => null,
+            'scope_level' => $direction ? 'direction' : null,
             'actif' => $data['actif'] ?? $user->actif,
         ];
 
@@ -150,10 +198,11 @@ class AdminController extends Controller
             ->with('success', "Utilisateur {$user->nomComplet()} mis a jour.");
     }
 
-    public function toggleActif(User $user)
+    public function toggleActif(Request $request, User $user)
     {
         $this->authorize('admin.utilisateurs');
         abort_if($user->id === auth()->id(), 403, 'Vous ne pouvez pas desactiver votre propre compte.');
+        abort_unless($this->scopeUsers(User::query()->whereKey($user->id), $request)->exists(), 403);
 
         $user->update(['actif' => ! $user->actif]);
 
@@ -162,19 +211,21 @@ class AdminController extends Controller
         return back()->with('success', "Compte {$etat}.");
     }
 
-    public function destroy(User $user)
+    public function destroy(Request $request, User $user)
     {
         $this->authorize('admin.utilisateurs');
         abort_if($user->id === auth()->id(), 403, 'Vous ne pouvez pas supprimer votre propre compte.');
+        abort_unless($this->scopeUsers(User::query()->whereKey($user->id), $request)->exists(), 403);
 
         $user->delete();
 
         return back()->with('success', 'Utilisateur archive.');
     }
 
-    public function restore(User $user)
+    public function restore(Request $request, User $user)
     {
         $this->authorize('admin.utilisateurs');
+        abort_unless($this->scopeUsers(User::withTrashed()->whereKey($user->id), $request)->exists(), 403);
 
         $user->restore();
 
@@ -184,6 +235,7 @@ class AdminController extends Controller
     public function auditLog(Request $request)
     {
         $this->authorize('admin.audit_log');
+        abort_unless($request->user()->resolveVisibilityScope()->isGlobal, 403);
 
         $query = Activity::with('causer')->latest();
 
@@ -207,13 +259,15 @@ class AdminController extends Controller
         $logs = $query->paginate(50)->withQueryString();
         $users = User::orderBy('name')->get(['id', 'name', 'prenom']);
         $logNames = Activity::select('log_name')->distinct()->pluck('log_name');
+        $scopeLabel = 'Perimetre de donnees : Consolidation institutionnelle';
 
-        return view('admin.audit_log', compact('logs', 'users', 'logNames'));
+        return view('admin.audit_log', compact('logs', 'users', 'logNames', 'scopeLabel'));
     }
 
     public function auditEvents(Request $request)
     {
         $this->authorize('admin.audit_log');
+        abort_unless($request->user()->resolveVisibilityScope()->isGlobal, 403);
 
         $query = $this->buildAuditEventsQuery($request);
 
@@ -240,6 +294,7 @@ class AdminController extends Controller
     public function exportAuditEvents(Request $request): Response
     {
         $this->authorize('admin.audit_log');
+        abort_unless($request->user()->resolveVisibilityScope()->isGlobal, 403);
 
         $events = $this->buildAuditEventsQuery($request)->get();
         $filename = 'audit_metier_' . now()->format('Ymd_His') . '.csv';
@@ -397,5 +452,23 @@ class AdminController extends Controller
                 'url' => null,
             ],
         };
+    }
+
+    private function scopeUsers($query, Request $request)
+    {
+        return app(UserScopeResolver::class)->applyToQuery($query, $request->user(), [
+            'departement' => 'departement_id',
+            'direction' => 'direction_id',
+            'service' => 'service_id',
+        ]);
+    }
+
+    private function scopeDirections($query, Request $request)
+    {
+        return app(UserScopeResolver::class)->applyToQuery($query, $request->user(), [
+            'departement' => 'departement_id',
+            'direction' => 'id',
+            'service' => null,
+        ]);
     }
 }

@@ -29,7 +29,7 @@ class ReportDashboardController extends Controller
 
         $recentReports = GeneratedReport::query()
             ->with(['definition', 'user', 'papa'])
-            ->where('user_id', $user->id)
+            ->visibleTo($user)
             ->latest()
             ->take(8)
             ->get();
@@ -42,17 +42,20 @@ class ReportDashboardController extends Controller
             ->get();
 
         $papas = Papa::query()
+            ->visibleTo($user)
             ->orderByDesc('annee')
             ->get(['id', 'code', 'libelle']);
 
         $stats = [
             'definitions' => ReportDefinition::query()->where('actif', true)->count(),
-            'generated' => GeneratedReport::query()->where('user_id', $user->id)->where('statut', 'generated')->count(),
-            'queued' => GeneratedReport::query()->where('user_id', $user->id)->whereIn('statut', ['queued', 'processing'])->count(),
-            'failed' => GeneratedReport::query()->where('user_id', $user->id)->where('statut', 'failed')->count(),
+            'generated' => GeneratedReport::query()->visibleTo($user)->where('statut', 'generated')->count(),
+            'queued' => GeneratedReport::query()->visibleTo($user)->whereIn('statut', ['queued', 'processing'])->count(),
+            'failed' => GeneratedReport::query()->visibleTo($user)->where('statut', 'failed')->count(),
         ];
 
-        return view('reports.dashboard', compact('definitions', 'recentReports', 'recentNarrativeReports', 'stats', 'papas'));
+        $scopeLabel = $user->scopeLabel();
+
+        return view('reports.dashboard', compact('definitions', 'recentReports', 'recentNarrativeReports', 'stats', 'papas', 'scopeLabel'));
     }
 
     public function generate(Request $request, ReportDefinition $definition, ReportGenerationService $reportGenerationService)

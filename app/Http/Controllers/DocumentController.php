@@ -18,8 +18,10 @@ class DocumentController extends Controller
     public function index(Request $request)
     {
         $this->authorize('document.voir');
+        $user = $request->user();
 
         $query = Document::with(['categorie', 'deposePar', 'documentable'])
+            ->visibleTo($user)
             ->orderByDesc('created_at');
 
         if ($request->filled('categorie_id')) {
@@ -33,21 +35,23 @@ class DocumentController extends Controller
         }
 
         // Masquer les docs strictement confidentiels si pas le droit
-        if (!$request->user()->can('document.voir_confidentiel')) {
+        if (!$user->can('document.voir_confidentiel')) {
             $query->where('confidentialite', '!=', 'strictement_confidentiel');
         }
 
         $documents  = $query->paginate(20)->withQueryString();
         $categories = CategorieDocument::actif()->orderBy('libelle')->get();
+        $scopeLabel = $user->scopeLabel();
 
-        return view('documents.index', compact('documents', 'categories'));
+        return view('documents.index', compact('documents', 'categories', 'scopeLabel'));
     }
 
     public function create()
     {
         $this->authorize('document.deposer');
         $categories = CategorieDocument::actif()->orderBy('libelle')->get();
-        return view('documents.create', compact('categories'));
+        $scopeLabel = request()->user()->scopeLabel();
+        return view('documents.create', compact('categories', 'scopeLabel'));
     }
 
     public function store(StoreDocumentRequest $request)
@@ -141,11 +145,13 @@ class DocumentController extends Controller
     public function exportAudit(Request $request): Response
     {
         $this->authorize('document.voir');
+        $user = $request->user();
 
         $query = Document::with(['categorie', 'deposePar', 'validePar'])
+            ->visibleTo($user)
             ->orderBy('created_at', 'desc');
 
-        if (! $request->user()->can('document.voir_confidentiel')) {
+        if (! $user->can('document.voir_confidentiel')) {
             $query->where('confidentialite', '!=', 'strictement_confidentiel');
         }
 

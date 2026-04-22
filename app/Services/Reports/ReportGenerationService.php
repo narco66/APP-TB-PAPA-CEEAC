@@ -15,7 +15,9 @@ use App\Models\ResultatAttendu;
 use App\Models\User;
 use App\Services\AuditService;
 use App\Services\DashboardService;
+use App\Services\Security\UserScopeResolver;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Facades\Excel;
@@ -26,6 +28,7 @@ class ReportGenerationService
     public function __construct(
         private DashboardService $dashboardService,
         private AuditService $auditService,
+        private UserScopeResolver $userScopeResolver,
     ) {}
 
     public function generate(ReportDefinition $definition, User $user, array $filters): GeneratedReport
@@ -39,12 +42,14 @@ class ReportGenerationService
         }
 
         $papa = isset($filters['papa_id']) ? Papa::findOrFail($filters['papa_id']) : null;
+        $this->ensurePapaAccessible($user, $papa);
+        $scope = $this->userScopeResolver->resolve($user);
         $timestamp = now();
         $disk = Storage::disk('local');
         $baseName = $this->buildBaseName($definition, $papa, $timestamp, $format);
         $relativePath = 'reports/generated/' . $timestamp->format('Y/m') . '/' . $baseName;
 
-        [$content, $mimeType] = $this->buildContent($definition, $papa, $format);
+        [$content, $mimeType] = $this->buildContent($definition, $papa, $format, $user);
 
         $disk->put($relativePath, $content);
 
@@ -66,6 +71,8 @@ class ReportGenerationService
                 'definition_label' => $definition->libelle,
                 'papa_code' => $papa?->code,
             ],
+            'scope_snapshot' => $scope->toArray(),
+            'scope_label' => $user->scopeLabel(),
             'generated_at' => $timestamp,
         ]);
 
@@ -103,6 +110,8 @@ class ReportGenerationService
         }
 
         $papa = isset($filters['papa_id']) ? Papa::findOrFail($filters['papa_id']) : null;
+        $this->ensurePapaAccessible($user, $papa);
+        $scope = $this->userScopeResolver->resolve($user);
 
         $generatedReport = GeneratedReport::create([
             'report_definition_id' => $definition->id,
@@ -118,6 +127,8 @@ class ReportGenerationService
                 'definition_label' => $definition->libelle,
                 'papa_code' => $papa?->code,
             ],
+            'scope_snapshot' => $scope->toArray(),
+            'scope_label' => $user->scopeLabel(),
         ]);
 
         GenerateReportJob::dispatch($generatedReport->id);
@@ -172,7 +183,7 @@ class ReportGenerationService
             $baseName = $this->buildBaseName($definition, $papa, $timestamp, $generatedReport->format);
             $relativePath = 'reports/generated/' . $timestamp->format('Y/m') . '/' . $baseName;
 
-            [$content, $mimeType] = $this->buildContent($definition, $papa, $generatedReport->format);
+            [$content, $mimeType] = $this->buildContent($definition, $papa, $generatedReport->format, $generatedReport->user);
 
             $disk->put($relativePath, $content);
 
@@ -241,7 +252,7 @@ class ReportGenerationService
         return $generatedReport->fresh();
     }
 
-    private function generateExecutiveGlobal(?Papa $papa, string $format): array
+    private function generateExecutiveGlobal(?Papa $papa, string $format, User $user): array
     {
         if (! $papa) {
             throw ValidationException::withMessages(['papa_id' => 'Le PAPA est obligatoire pour ce rapport.']);
@@ -251,8 +262,47 @@ class ReportGenerationService
             throw ValidationException::withMessages(['format' => 'Le rapport executif global est disponible en PDF pour ce lot.']);
         }
 
-        $papa->load(['actionsPrioritaires', 'budgets.partenaire']);
-        $kpis = $this->dashboardService->kpisExecutif($papa);
+        $actions = $papa->actionsPrioritaires()->visibleTo($user)->get();
+        $activites = Activite::query()
+            ->visibleTo($user)
+            ->whereHas('resultatAttendu.objectifImmediats.actionPrioritaire', fn ($q) => $q->where('papa_id', $papa->id))
+            ->get();
+        $budgets = \App\Models\BudgetPapa::query()
+            ->where('papa_id', $papa->id)
+            ->where(function ($query) use ($user) {
+                $query->whereHas('actionPrioritaire', fn ($aq) => $aq->visibleTo($user))
+                    ->orWhereHas('activite', fn ($aq) => $aq->visibleTo($user));
+            })
+            ->get();
+        $alertes = \App\Models\Alerte::query()
+            ->visibleTo($user)
+            ->where('papa_id', $papa->id)
+            ->whereIn('statut', ['nouvelle', 'vue'])
+            ->get();
+
+        $kpis = [
+            'papa' => $papa,
+            'taux_execution_physique' => $actions->avg('taux_realisation') ?? 0,
+            'taux_execution_financiere' => $budgets->sum('montant_prevu') > 0
+                ? round(($budgets->sum('montant_decaisse') / $budgets->sum('montant_prevu')) * 100, 2)
+                : 0,
+            'total_actions_prioritaires' => $actions->count(),
+            'actions_en_cours' => $actions->where('statut', 'en_cours')->count(),
+            'actions_terminees' => $actions->where('statut', 'termine')->count(),
+            'total_activites' => $activites->count(),
+            'activites_en_retard' => $activites->filter(fn ($a) => $a->estEnRetard())->count(),
+            'budget_total' => $budgets->sum('montant_prevu'),
+            'budget_engage' => $budgets->sum('montant_engage'),
+            'budget_decaisse' => $budgets->sum('montant_decaisse'),
+            'taux_engagement' => $budgets->sum('montant_prevu') > 0
+                ? round(($budgets->sum('montant_engage') / $budgets->sum('montant_prevu')) * 100, 2)
+                : 0,
+            'taux_decaissement' => $budgets->sum('montant_prevu') > 0
+                ? round(($budgets->sum('montant_decaisse') / $budgets->sum('montant_prevu')) * 100, 2)
+                : 0,
+            'alertes_critiques' => $alertes->where('niveau', 'critique')->count(),
+            'alertes_attention' => $alertes->where('niveau', 'attention')->count(),
+        ];
         $content = Pdf::loadView('pdf.reports.executive_global', compact('papa', 'kpis'))
             ->setPaper('a4', 'portrait')
             ->output();
@@ -260,24 +310,23 @@ class ReportGenerationService
         return [$content, 'application/pdf'];
     }
 
-    private function generateFinancialGlobal(?Papa $papa, string $format): array
+    private function generateFinancialGlobal(?Papa $papa, string $format, User $user): array
     {
         if (! $papa) {
             throw ValidationException::withMessages(['papa_id' => 'Le PAPA est obligatoire pour ce rapport.']);
         }
 
         return match ($format) {
-            'pdf' => $this->generateFinancialGlobalPdf($papa),
-            'xlsx' => [Excel::raw(new BudgetExport($papa), ExcelFormat::XLSX), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
-            'csv' => [Excel::raw(new BudgetExport($papa), ExcelFormat::CSV), 'text/csv'],
+            'pdf' => $this->generateFinancialGlobalPdf($papa, $user),
+            'xlsx' => $this->generateFinancialGlobalTable($papa, $user, ExcelFormat::XLSX),
+            'csv' => $this->generateFinancialGlobalTable($papa, $user, ExcelFormat::CSV),
             default => throw ValidationException::withMessages(['format' => 'Format non pris en charge pour le rapport budgetaire global.']),
         };
     }
 
-    private function generateFinancialGlobalPdf(Papa $papa): array
+    private function generateFinancialGlobalPdf(Papa $papa, User $user): array
     {
-        $papa->load(['budgets.partenaire']);
-        $budgets = $papa->budgets;
+        $budgets = $this->scopedBudgets($papa, $user)->load('partenaire');
         $totaux = [
             'prevu' => $budgets->sum('montant_prevu'),
             'engage' => $budgets->sum('montant_engage'),
@@ -291,7 +340,28 @@ class ReportGenerationService
         return [$content, 'application/pdf'];
     }
 
-    private function generateOverdueActivities(?Papa $papa, string $format): array
+    private function generateFinancialGlobalTable(Papa $papa, User $user, string $excelFormat): array
+    {
+        $budgets = $this->scopedBudgets($papa, $user);
+        $headings = ['Ligne', 'Source', 'Prevu', 'Engage', 'Decaisse', 'Solde'];
+        $rows = $budgets->map(fn ($budget) => [
+            $budget->libelle_ligne,
+            $budget->libelleSource(),
+            (float) $budget->montant_prevu,
+            (float) $budget->montant_engage,
+            (float) $budget->montant_decaisse,
+            (float) $budget->montant_solde,
+        ])->all();
+
+        return [
+            Excel::raw(new GenericArrayExport($headings, $rows, 'BudgetGlobal'), $excelFormat),
+            $excelFormat === ExcelFormat::XLSX
+                ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                : 'text/csv',
+        ];
+    }
+
+    private function generateOverdueActivities(?Papa $papa, string $format, User $user): array
     {
         if (! $papa) {
             throw ValidationException::withMessages(['papa_id' => 'Le PAPA est obligatoire pour ce rapport.']);
@@ -299,6 +369,7 @@ class ReportGenerationService
 
         $activities = Activite::query()
             ->with(['direction', 'service', 'responsable'])
+            ->visibleTo($user)
             ->whereHas('resultatAttendu.objectifImmediats.actionPrioritaire', fn ($query) => $query->where('papa_id', $papa->id))
             ->enRetard()
             ->orderBy('date_fin_prevue')
@@ -326,13 +397,14 @@ class ReportGenerationService
         );
     }
 
-    private function generateRbmChainConsolidated(?Papa $papa, string $format): array
+    private function generateRbmChainConsolidated(?Papa $papa, string $format, User $user): array
     {
         if (! $papa) {
             throw ValidationException::withMessages(['papa_id' => 'Le PAPA est obligatoire pour ce rapport.']);
         }
 
         $actions = \App\Models\ActionPrioritaire::query()
+            ->visibleTo($user)
             ->with([
                 'departement',
                 'objectifsImmediat.resultatsAttendus.activites',
@@ -384,7 +456,7 @@ class ReportGenerationService
         );
     }
 
-    private function generateGovernanceDecisions(?Papa $papa, string $format): array
+    private function generateGovernanceDecisions(?Papa $papa, string $format, User $user): array
     {
         if (! $papa) {
             throw ValidationException::withMessages(['papa_id' => 'Le PAPA est obligatoire pour ce rapport.']);
@@ -393,6 +465,12 @@ class ReportGenerationService
         $decisions = Decision::query()
             ->with(['prisePar', 'valideePar'])
             ->where('papa_id', $papa->id)
+            ->where(function ($query) use ($user) {
+                $query->whereHas('actionPrioritaire', fn ($aq) => $aq->visibleTo($user))
+                    ->orWhereHas('activite', fn ($aq) => $aq->visibleTo($user))
+                    ->orWhereHas('budgetPapa.actionPrioritaire', fn ($aq) => $aq->visibleTo($user))
+                    ->orWhereHas('budgetPapa.activite', fn ($aq) => $aq->visibleTo($user));
+            })
             ->orderByDesc('date_decision')
             ->get();
 
@@ -419,7 +497,7 @@ class ReportGenerationService
         );
     }
 
-    private function generateGedMissingEvidence(?Papa $papa, string $format): array
+    private function generateGedMissingEvidence(?Papa $papa, string $format, User $user): array
     {
         if (! $papa) {
             throw ValidationException::withMessages(['papa_id' => 'Le PAPA est obligatoire pour ce rapport.']);
@@ -427,7 +505,7 @@ class ReportGenerationService
 
         $results = ResultatAttendu::query()
             ->with(['objectifImmediats.actionPrioritaire', 'responsable'])
-            ->whereHas('objectifImmediats.actionPrioritaire', fn ($query) => $query->where('papa_id', $papa->id))
+            ->whereHas('objectifImmediats.actionPrioritaire', fn ($query) => $query->where('papa_id', $papa->id)->visibleTo($user))
             ->where('preuve_requise', true)
             ->get()
             ->filter(fn (ResultatAttendu $resultat) => $resultat->preuveManquante())
@@ -453,19 +531,44 @@ class ReportGenerationService
         );
     }
 
-    private function buildContent(ReportDefinition $definition, ?Papa $papa, string $format): array
+    private function buildContent(ReportDefinition $definition, ?Papa $papa, string $format, ?User $user): array
     {
+        if (! $user) {
+            throw ValidationException::withMessages([
+                'user' => 'Utilisateur de generation introuvable.',
+            ]);
+        }
+
         return match ($definition->code) {
-            'executive_global_papa' => $this->generateExecutiveGlobal($papa, $format),
-            'financial_global_papa' => $this->generateFinancialGlobal($papa, $format),
-            'rbm_chain_consolidated' => $this->generateRbmChainConsolidated($papa, $format),
-            'operational_overdue_activities' => $this->generateOverdueActivities($papa, $format),
-            'governance_decisions' => $this->generateGovernanceDecisions($papa, $format),
-            'ged_missing_evidence' => $this->generateGedMissingEvidence($papa, $format),
+            'executive_global_papa' => $this->generateExecutiveGlobal($papa, $format, $user),
+            'financial_global_papa' => $this->generateFinancialGlobal($papa, $format, $user),
+            'rbm_chain_consolidated' => $this->generateRbmChainConsolidated($papa, $format, $user),
+            'operational_overdue_activities' => $this->generateOverdueActivities($papa, $format, $user),
+            'governance_decisions' => $this->generateGovernanceDecisions($papa, $format, $user),
+            'ged_missing_evidence' => $this->generateGedMissingEvidence($papa, $format, $user),
             default => throw ValidationException::withMessages([
                 'definition' => "Le modele {$definition->libelle} n'est pas encore implemente.",
             ]),
         };
+    }
+
+    private function ensurePapaAccessible(User $user, ?Papa $papa): void
+    {
+        if ($papa && ! $papa->canBeAccessedBy($user)) {
+            throw new AuthorizationException('Ce PAPA est hors de votre perimetre autorise.');
+        }
+    }
+
+    private function scopedBudgets(Papa $papa, User $user)
+    {
+        return \App\Models\BudgetPapa::query()
+            ->with(['partenaire', 'actionPrioritaire', 'activite'])
+            ->where('papa_id', $papa->id)
+            ->where(function ($query) use ($user) {
+                $query->whereHas('actionPrioritaire', fn ($aq) => $aq->visibleTo($user))
+                    ->orWhereHas('activite', fn ($aq) => $aq->visibleTo($user));
+            })
+            ->get();
     }
 
     private function renderTabularReport(

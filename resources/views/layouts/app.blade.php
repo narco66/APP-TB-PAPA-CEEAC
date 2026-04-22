@@ -6,19 +6,12 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'TB-PAPA') — CEEAC-ECCAS</title>
 
-    <!-- Tailwind CSS via CDN (remplacer par Vite en production) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Alpine.js -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <!-- ApexCharts -->
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <!-- Assets compilés : Tailwind CSS + Font Awesome + Alpine.js -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <!-- @stack('apexcharts') — ApexCharts now bundled via Vite (app.js) -->
 
     <style>
         [x-cloak] { display: none !important; }
-        .sidebar-link.active { @apply bg-indigo-700 text-white; }
-        .progress-bar { transition: width 0.6s ease; }
     </style>
     @stack('styles')
 </head>
